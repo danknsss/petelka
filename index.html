@@ -1,0 +1,1648 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Петелька</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<style id="mainCss">
+/* Layout: шапка и вкладки; в «Новой схеме» форма слева, готовая схема справа (на телефоне — одна колонка); фон — клетка, как бумага для схем */
+:root{
+  --paper:#EEF2F0; --surface:#FFFFFF; --sunken:#F5F7F6; --ink:#1B2333; --muted:#596572; --line:#D3DCD8; --grid:#E1E8E4;
+  --accent:#C2305C; --accent-ink:#FFFFFF; --accent-soft:#F8E1E8;
+  --ok:#1D7656; --ok-soft:#DBF0E6; --warn:#955600; --warn-soft:#FBEDD4; --bad:#B42318; --bad-soft:#FCE4E0;
+  --chart:#1B2333;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(27,35,51,.06),0 8px 28px rgba(27,35,51,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11151B; --surface:#192029; --sunken:#151B22; --ink:#E5E9EF; --muted:#9AA6B2; --line:#2C3541; --grid:#181E26;
+    --accent:#F2709B; --accent-ink:#2A0912; --accent-soft:#3A1A26;
+    --ok:#5FD0A6; --ok-soft:#13302A; --warn:#F3B65C; --warn-soft:#33260F; --bad:#FF8F84; --bad-soft:#3A1815;
+    --chart:#E5E9EF; --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 28px rgba(0,0,0,.28);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11151B; --surface:#192029; --sunken:#151B22; --ink:#E5E9EF; --muted:#9AA6B2; --line:#2C3541; --grid:#181E26;
+  --accent:#F2709B; --accent-ink:#2A0912; --accent-soft:#3A1A26;
+  --ok:#5FD0A6; --ok-soft:#13302A; --warn:#F3B65C; --warn-soft:#33260F; --bad:#FF8F84; --bad-soft:#3A1815;
+  --chart:#E5E9EF; --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 28px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{background-color:var(--paper);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;color:var(--ink);font:15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:0 56px}
+.muted{color:var(--muted)}
+.hint{color:var(--muted);font-size:13px}
+.pad{padding:16px}
+
+/* шапка */
+.top{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding-block:20px 12px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand svg{flex:none}
+.brand h1{font:700 22px/1.1 var(--f-display);letter-spacing:-.01em}
+.brand p{color:var(--muted);font-size:13px;margin-top:3px}
+.status{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:5px 11px;border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.on{background:var(--ok)} .dot.local{background:var(--warn)}
+
+/* вкладки */
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-bottom:20px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:10}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:none;font:600 14.5px var(--f-body);color:var(--muted);padding:11px 12px 10px;border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .n{font:600 11px/1.6 var(--f-mono);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 6px;color:var(--muted)}
+.tab .n:empty{display:none}
+
+/* общие элементы */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 14px;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.lg{padding:12px 20px;font-size:15px;width:100%}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.quiet:hover{color:var(--ink);border-color:var(--line)}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.x{appearance:none;border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;width:30px;height:30px;border-radius:8px;cursor:pointer;flex:none}
+.x:hover{background:var(--sunken);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:500;cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tag{display:inline-flex;align-items:baseline;gap:5px;font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--sunken);border:1px solid var(--line)}
+.tag b{font-weight:600}
+.tag i{font-style:normal;color:var(--muted)}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--c,var(--line));border:1px solid var(--line);flex:none;vertical-align:-2px}
+.ball{width:46px;height:46px;border-radius:50%;flex:none;background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.5),transparent 42%),repeating-linear-gradient(118deg,transparent 0 5px,rgba(0,0,0,.09) 5px 6px),var(--c,var(--line));box-shadow:inset -4px -6px 10px rgba(0,0,0,.2),0 0 0 1px var(--line)}
+.alert{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-radius:10px;font-size:14px}
+.alert.bad{background:var(--bad-soft);color:var(--bad)}
+.alert.ok{background:var(--ok-soft);color:var(--ok)}
+.alert.warn{background:var(--warn-soft);color:var(--warn)}
+.alert .btn{margin-left:auto}
+.err{color:var(--bad);font-size:13.5px}
+.empty{padding:28px 24px;display:grid;gap:10px;justify-items:start;max-width:640px}
+.empty h3{font:600 17px var(--f-body)}
+
+/* формы */
+.field{display:grid;gap:7px;min-width:0}
+.lbl{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+input[type="text"],input[type="search"],input:not([type]),textarea,select{width:100%;border:1px solid var(--line);background:var(--sunken);border-radius:9px;padding:9px 11px;font-size:15px;min-width:0}
+textarea{resize:vertical;line-height:1.45}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+input[type="color"]{appearance:none;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;padding:0;background:none;cursor:pointer;flex:none}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+input[type="color"]::-webkit-color-swatch{border:0;border-radius:50%}
+input[type="color"]::-moz-color-swatch{border:0;border-radius:50%}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{margin-top:3px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* генератор */
+.gen{display:grid;grid-template-columns:minmax(330px,420px) minmax(0,1fr);gap:20px;align-items:start}
+.form{padding:20px;display:grid;gap:18px}
+.fhead h2{font:700 18px/1.2 var(--f-display)}
+.fhead p{color:var(--muted);font-size:13.5px;margin-top:6px}
+.drop{position:relative;display:grid;place-items:center;text-align:center;gap:4px;border:1.5px dashed var(--line);border-radius:10px;padding:16px;cursor:pointer;background:var(--sunken);font-size:14px}
+.drop:hover,.drop.over{border-color:var(--accent)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop b{color:var(--accent)}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px}
+.thumbs:empty{display:none}
+.th{position:relative;margin:0;width:76px;height:76px;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th .x{position:absolute;top:3px;right:3px;width:24px;height:24px;font-size:16px;background:var(--surface);color:var(--ink);opacity:.92}
+.yarnsel{display:grid;gap:8px}
+.selrow{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 6px 8px 10px;background:var(--sunken)}
+.selmain{display:grid;gap:3px;min-width:0;flex:1}
+.selmain b{font-weight:600;font-size:14px}
+.selmain span{font-size:12.5px}
+.selmain input{padding:6px 9px;font-size:14px;background:var(--surface)}
+.picker{border:1px solid var(--line);border-radius:10px;padding:8px;display:grid;gap:8px;background:var(--surface)}
+.picklist{display:grid;max-height:280px;overflow:auto}
+.picklist:empty{display:none}
+.pick{appearance:none;border:0;background:none;text-align:left;display:flex;gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer;width:100%}
+.pick:hover,.pick:focus-visible{background:var(--sunken)}
+.pick span{display:grid;min-width:0}
+.pick b{font-weight:600;font-size:14px}
+.pick small{color:var(--muted);font-size:12.5px}
+.gauge{display:flex;align-items:center;gap:6px}
+.gauge span{color:var(--muted)}
+.resultpane{min-width:0;padding:22px}
+
+/* ожидание */
+.busy{display:flex;gap:18px;align-items:flex-start;padding:10px 4px}
+.busy .stage{font-weight:600;font-size:16px}
+.busy > div{display:grid;gap:8px;min-width:0}
+.partsSeen{display:flex;flex-wrap:wrap;gap:6px}
+.spinsvg{animation:spin 9s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spinsvg{animation:none}}
+
+/* схема */
+.res{display:grid;gap:22px;min-width:0}
+.example{background:var(--accent-soft);border:1px dashed var(--accent);border-radius:10px;padding:10px 14px;font-size:14px}
+.example b{color:var(--accent)}
+.res-head{display:grid;gap:10px}
+.eyebrow{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.ptitle{font:700 25px/1.2 var(--f-display);letter-spacing:-.015em}
+.lead{font-size:15.5px;max-width:65ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.actbar{display:flex;flex-wrap:wrap;gap:8px}
+body.no-dl .dl{display:none}
+.sec{display:grid;gap:10px;min-width:0}
+.sec > h3{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.sec > h3::after{content:"";flex:1;border-top:1px solid var(--line)}
+.mats{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mat{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+.mat:first-child{border-top:0}
+.mat .ball{width:34px;height:34px;grid-row:span 2}
+.mat .mi b{font-weight:600}
+.mat .mi small{display:block;color:var(--muted);font-size:12.5px}
+.mat .mq{text-align:right;font:500 13px var(--f-mono);white-space:nowrap}
+.mat .mq b{font:700 14px var(--f-body)}
+.mat .ms{grid-column:2 / -1;font-size:12.5px}
+.plain{margin:0;padding-left:20px;display:grid;gap:5px}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 16px}
+.lg{display:flex;align-items:center;gap:9px;font-size:13.5px;min-width:0}
+.lg svg{flex:none}
+.lg b{font:600 13px var(--f-mono);white-space:nowrap}
+.lg span{color:var(--muted);min-width:0}
+.part{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;background:var(--surface);min-width:0}
+.part > header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.part h4{font:600 17px var(--f-body)}
+.part .qty{font:600 13px var(--f-mono);color:var(--accent)}
+.part .pcol{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.part .intro{font-size:14.5px;max-width:70ch}
+.part details{border:1px solid var(--line);border-radius:10px;background:var(--sunken)}
+.part summary{cursor:pointer;padding:8px 12px;font-weight:600;font-size:13.5px;list-style-position:inside}
+.chartbox{overflow-x:auto;padding:6px 10px 10px}
+.chartbox .hint{padding:0 2px 4px}
+svg.chart{display:block;margin:0 auto}
+svg.chart.round{width:100%;height:auto}
+.chart g,.lg g,.ic g{color:var(--chart);stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.chart g.alt,.lg g.alt,.ic g.alt{color:var(--accent)}
+.chart .f,.lg .f,.ic .f{fill:currentColor;stroke:none}
+.chart .ring{stroke:var(--line);fill:none;stroke-dasharray:2 4}
+.chart .mrc,.ic .mrc{stroke:var(--muted);fill:none;stroke-width:1.4}
+.chart text{font:600 10.5px var(--f-mono);fill:var(--muted)}
+.rows{display:grid}
+.row{display:grid;grid-template-columns:4.6em minmax(0,1fr) auto;gap:10px;padding:7px 8px;border-top:1px dashed var(--line);align-items:baseline;border-radius:6px}
+.row:first-child{border-top:0}
+.row.tap{cursor:pointer}
+.row.tap:hover{background:var(--sunken)}
+.row .n{font:600 12.5px var(--f-mono);color:var(--accent);font-variant-numeric:tabular-nums}
+.row .t{min-width:0}
+.row .c{font:500 12.5px var(--f-mono);color:var(--muted);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.row .okm{color:var(--ok);margin-left:5px}
+.row .warn{display:block;color:var(--bad);font-size:12.5px;margin-top:2px}
+.row.bad{background:var(--bad-soft)}
+.row.done{background:var(--ok-soft)}
+.row.done .t,.row.done .n{color:var(--muted)}
+.row.done .t{text-decoration:line-through;text-decoration-color:var(--ok)}
+.finish{font-size:14px}
+.steps{margin:0;padding-left:22px;display:grid;gap:6px}
+.progress{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.bar{height:6px;border-radius:999px;background:var(--sunken);border:1px solid var(--line);overflow:hidden;flex:1;max-width:240px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.refine{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:18px}
+.refine h3{font:600 15px var(--f-body)}
+.copybox{display:grid;gap:8px}
+
+/* вкладки со списками */
+.vhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.vhead h2{font:700 20px/1.2 var(--f-display)}
+.vhead p{margin-top:5px;max-width:70ch}
+.stashgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.ycard{display:flex;gap:14px;padding:16px;align-items:flex-start}
+.ybody{display:grid;gap:4px;min-width:0;flex:1}
+.ybody h4{font:600 16px var(--f-body)}
+.ybody .yc{font-weight:500}
+.ybody .spec{font:500 12.5px var(--f-mono);color:var(--muted)}
+.ybody .note{font-size:13px;font-style:italic;color:var(--muted)}
+.qty{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:14px}
+.qty button{appearance:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--sunken);cursor:pointer;font-size:16px;font-weight:600}
+.yact{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sform{padding:20px;display:grid;gap:14px;margin-bottom:16px}
+.colorrow{display:flex;gap:8px;align-items:center}
+.scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.scard{appearance:none;text-align:left;display:flex;gap:14px;padding:14px;cursor:pointer;color:var(--ink);align-items:center}
+.scard:hover{border-color:var(--muted)}
+.sthumb{width:64px;height:64px;border-radius:10px;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--sunken);border:1px solid var(--line)}
+.sthumb img{width:100%;height:100%;object-fit:cover}
+.sbody{display:grid;gap:4px;min-width:0;flex:1}
+.sbody b{font-weight:600;font-size:15px}
+.sbody small{color:var(--muted);font-size:12.5px}
+.back{margin-bottom:12px}
+.savedone .resultpane{padding:22px}
+
+/* справочник */
+.refwrap{display:grid;gap:14px}
+.filters{display:grid;gap:10px}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px}
+.ylist{overflow:hidden}
+.yrow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:11px 16px;border-top:1px solid var(--line)}
+.yrow:first-child{border-top:0}
+.yrow .yn b{font-weight:600}
+.yrow .yn small{display:block;color:var(--muted);font-size:12.5px}
+.yrow .ys{font:500 12.5px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.yrow .ys b{color:var(--ink);font-weight:600}
+.yrow .ya{display:flex;gap:4px;justify-content:flex-end}
+.analog{padding:18px;display:grid;gap:14px;border-color:var(--accent)}
+.ahead{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.ahead h3{font:700 18px/1.25 var(--f-display);margin-top:3px}
+.calc{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14.5px}
+.calc input{width:80px;text-align:center;font-family:var(--f-mono)}
+.alist{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.arow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 16px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+.arow:first-child{border-top:0}
+.arow .an b{font-weight:600;margin-right:6px}
+.arow .an small{display:block;color:var(--muted);font-size:12.5px}
+.arow .am,.arow .ak{text-align:right;font-size:13px;white-space:nowrap}
+.arow .ak b{font-size:15px}
+.arow small{display:block;color:var(--muted);font-size:12px}
+.custom{padding:16px;display:grid;gap:10px}
+.custom .cf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px;align-items:end}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:var(--shadow);transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{background:var(--bad);color:var(--surface)}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+
+@media (max-width: 980px){
+  .gen{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width: 640px){
+  .brand h1{font-size:20px}
+  .status{margin-left:0}
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .form,.resultpane,.savedone .resultpane{padding:16px}
+  .ptitle{font-size:21px}
+  .row{grid-template-columns:3.6em minmax(0,1fr) auto;gap:8px;padding:7px 4px}
+  .frow{grid-template-columns:minmax(0,1fr)}
+  .yrow{grid-template-columns:minmax(0,1fr) auto}
+  .yrow .ys{grid-column:1 / -1;grid-row:2}
+  .yrow .ya{grid-row:1;grid-column:2}
+  .custom .cf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .custom .cf .btn{grid-column:1 / -1}
+  .arow{grid-template-columns:minmax(0,1fr) auto}
+  .arow .am{grid-column:1;grid-row:2;text-align:left}
+  .arow .ak{grid-row:1 / span 2;grid-column:2}
+  .mat{grid-template-columns:auto minmax(0,1fr)}
+  .mat .mq{grid-column:2;text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg id="logo" width="44" height="44" viewBox="-24 -24 48 48" aria-hidden="true"></svg>
+      <div>
+        <h1>Петелька</h1>
+        <p>Схемы крючком по фото и описанию — под вашу пряжу</p>
+      </div>
+    </div>
+    <div class="status" id="status"><span class="dot"></span><span>Подключаюсь…</span></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Разделы">
+    <button class="tab" role="tab" data-tab="new" aria-selected="true">Новая схема</button>
+    <button class="tab" role="tab" data-tab="saved" aria-selected="false">Мои схемы <span class="n" id="nSaved"></span></button>
+    <button class="tab" role="tab" data-tab="stash" aria-selected="false">Моя пряжа <span class="n" id="nStash"></span></button>
+    <button class="tab" role="tab" data-tab="ref" aria-selected="false">Справочник пряжи</button>
+  </nav>
+
+  <main>
+    <!-- Новая схема -->
+    <section id="v-new" role="tabpanel">
+      <div class="gen">
+        <form id="genForm" class="panel form" novalidate>
+          <div class="fhead">
+            <h2>Новая схема</h2>
+            <p>Опишите идею или прикрепите фото. Чем точнее размер и пряжа, тем точнее расчёт петель и мотков.</p>
+          </div>
+
+          <div class="field">
+            <span class="lbl" id="lblType">Что вяжем</span>
+            <div class="chips" id="typeChips" role="group" aria-labelledby="lblType"></div>
+          </div>
+
+          <div class="field">
+            <label class="lbl" for="desc">Описание</label>
+            <textarea id="desc" rows="4"></textarea>
+          </div>
+
+          <div class="field" id="photoField">
+            <span class="lbl">Фото</span>
+            <label class="drop" id="drop" for="photoInput">
+              <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+              <span><b>Выберите фото</b> или перетащите сюда</span>
+              <span class="hint">Изделие, которое нравится, эскиз или картинка</span>
+            </label>
+            <div class="thumbs" id="thumbs"></div>
+          </div>
+          <p class="hint" id="photoNote" hidden>Фото в этом окне отправить нельзя — опишите изделие словами.</p>
+
+          <div class="field">
+            <label class="lbl" for="size">Размер</label>
+            <input id="size" type="text" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <span class="lbl">Пряжа и цвета</span>
+            <div id="yarnSel" class="yarnsel"></div>
+            <div class="actions">
+              <button type="button" class="btn sm" data-pick="stash">+ Из моей пряжи</button>
+              <button type="button" class="btn sm" data-pick="ref">+ Из справочника</button>
+            </div>
+            <div id="picker" class="picker" hidden>
+              <div class="colorrow">
+                <input id="pickQ" type="search" placeholder="Марка, название или состав" autocomplete="off" aria-label="Поиск пряжи">
+                <button type="button" class="x" id="pickClose" aria-label="Закрыть выбор">×</button>
+              </div>
+              <div id="pickList" class="picklist"></div>
+            </div>
+            <label class="check"><input type="checkbox" id="stashOnly"> Пусть Claude сам подберёт пряжу из моих запасов</label>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label class="lbl" for="hook">Крючок</label>
+              <select id="hook"></select>
+              <span class="hint" id="hookHint"></span>
+            </div>
+            <div class="field">
+              <span class="lbl">Плотность образца</span>
+              <div class="gauge">
+                <input id="gSt" type="text" inputmode="decimal" placeholder="петель" aria-label="Петель в 10 см">
+                <span>×</span>
+                <input id="gRows" type="text" inputmode="decimal" placeholder="рядов" aria-label="Рядов в 10 см">
+              </div>
+              <span class="hint">в 10 см, если связали образец</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="lbl" id="lblLevel">Опыт</span>
+            <div class="chips" id="levelChips" role="group" aria-labelledby="lblLevel"></div>
+          </div>
+          <div class="field">
+            <span class="lbl" id="lblNota">Обозначения</span>
+            <div class="chips" id="notaChips" role="group" aria-labelledby="lblNota"></div>
+          </div>
+          <label class="check"><input type="checkbox" id="careful"> Считать тщательнее — дольше, но лучше для одежды и сложных игрушек</label>
+
+          <p class="err" id="formErr" hidden></p>
+          <button type="submit" class="btn primary lg" id="goBtn">Составить схему</button>
+          <p class="hint" id="genNote"></p>
+        </form>
+
+        <div id="resultPane" class="panel resultpane" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Мои схемы -->
+    <section id="v-saved" role="tabpanel" hidden>
+      <div id="savedList"></div>
+      <div id="savedOne" class="savedone" hidden></div>
+    </section>
+
+    <!-- Моя пряжа -->
+    <section id="v-stash" role="tabpanel" hidden>
+      <div class="vhead">
+        <div>
+          <h2>Моя пряжа</h2>
+          <p class="muted" id="stashSummary">Мотки, которые есть дома. Генератор может подбирать схемы под них.</p>
+        </div>
+        <button type="button" class="btn primary" id="stashAddBtn">+ Добавить пряжу</button>
+      </div>
+      <form id="stashForm" class="panel sform" novalidate hidden>
+        <div class="field">
+          <label class="lbl" for="sfFind">Найти в справочнике</label>
+          <input id="sfFind" type="search" placeholder="Например, Jeans или Детский каприз" autocomplete="off">
+          <div id="sfFindList" class="picklist"></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label class="lbl" for="sfName">Марка и название</label><input id="sfName" type="text" autocomplete="off"></div>
+          <div class="field"><label class="lbl" for="sfComp">Состав</label><input id="sfComp" type="text" autocomplete="off" placeholder="55% хлопок, 45% акрил"></div>
+          <div class="field"><label class="lbl" for="sfG">Вес мотка, г</label><input id="sfG" type="text" inputmode="decimal"></div>
+          <div class="field"><label class="lbl" for="sfM">Метраж мотка, м</label><input id="sfM" type="text" inputmode="decimal"></div>
+          <div class="field"><label class="lbl" for="sfColor">Цвет — название или номер</label><div class="colorrow"><input id="sfHex" type="color" value="#d9cbb4" aria-label="Оттенок"><input id="sfColor" type="text" autocomplete="off" placeholder="молочный, 03"></div></div>
+          <div class="field"><label class="lbl" for="sfQty">Сколько мотков</label><input id="sfQty" type="text" inputmode="decimal" value="1"></div>
+        </div>
+        <div class="field"><label class="lbl" for="sfNote">Заметка</label><input id="sfNote" type="text" autocomplete="off" placeholder="Например: остаток от пледа, партия 1234"></div>
+        <p class="err" id="sfErr" hidden></p>
+        <div class="actions">
+          <button type="submit" class="btn primary" id="sfSave">Сохранить</button>
+          <button type="button" class="btn" id="sfCancel">Отмена</button>
+        </div>
+      </form>
+      <div id="stashList" class="stashgrid"></div>
+    </section>
+
+    <!-- Справочник -->
+    <section id="v-ref" role="tabpanel" hidden>
+      <div class="vhead">
+        <div>
+          <h2>Справочник пряжи</h2>
+          <p class="muted">Состав и метраж — по данным производителей и магазинов, сверяйтесь с этикеткой. Номер крючка — ориентир по толщине нити.</p>
+        </div>
+      </div>
+      <div class="refwrap">
+        <div id="analogPanel" class="panel analog" hidden></div>
+        <form class="panel custom" id="customForm" novalidate>
+          <span class="lbl">Найти замену для любой пряжи</span>
+          <div class="cf">
+            <div class="field"><label class="hint" for="cG">Вес мотка, г</label><input id="cG" type="text" inputmode="decimal" placeholder="100"></div>
+            <div class="field"><label class="hint" for="cM">Метраж, м</label><input id="cM" type="text" inputmode="decimal" placeholder="250"></div>
+            <div class="field"><label class="hint" for="cF">Состав</label><select id="cF"></select></div>
+            <button type="submit" class="btn">Подобрать</button>
+          </div>
+        </form>
+        <div class="filters">
+          <div class="frow">
+            <input id="refQ" type="search" placeholder="Поиск: марка, название, состав" autocomplete="off" aria-label="Поиск по справочнику">
+            <select id="fiberSel" aria-label="Состав"></select>
+          </div>
+          <div class="chips" id="thickChips" role="group" aria-label="Толщина"></div>
+        </div>
+        <p class="hint" id="refCount"></p>
+        <div id="refList" class="panel ylist"></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+const C = window.claude;
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { if (v == null) return null; const n = parseFloat(String(v).replace(',', '.').replace(/[^\d.\-]/g, '')); return Number.isFinite(n) ? n : null; };
+const fmt = (n, d = 1) => { if (n == null || !Number.isFinite(n)) return '—'; const r = Math.round(n * 10 ** d) / 10 ** d; return String(r).replace('.', ','); };
+const plural = (n, f) => { if (!Number.isInteger(n)) return f[1]; const a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return f[2]; if (b > 1 && b < 5) return f[1]; if (b === 1) return f[0]; return f[2]; };
+const SK = ['моток', 'мотка', 'мотков'];
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const lsGet = (k, d) => { try { const v = localStorage.getItem('petelka.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem('petelka.' + k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const isHex = h => /^#[0-9a-f]{6}$/i.test(String(h || ''));
+const reduceMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Справочник пряжи ---------- */
+const REF = [
+  ['ya-jeans','YarnArt','Jeans','55% хлопок, 45% акрил',50,160,'хлопок+синтетика'],
+  ['ya-begonia','YarnArt','Begonia','100% мерсеризованный хлопок',50,169,'мерс. хлопок'],
+  ['ya-violet','YarnArt','Violet','100% мерсеризованный хлопок',50,282,'мерс. хлопок'],
+  ['ya-eco-cotton','YarnArt','Eco Cotton','80% хлопок, 20% полиэстер',100,220,'хлопок+синтетика'],
+  ['ya-denim-washed','YarnArt','Denim Washed','70% хлопок, 30% акрил',50,130,'хлопок+синтетика'],
+  ['ya-flowers','YarnArt','Flowers','55% хлопок, 45% акрил, секционное крашение',250,1000,'хлопок+синтетика'],
+  ['ya-baby','YarnArt','Baby','100% акрил',50,150,'акрил'],
+  ['ya-dolce','YarnArt','Dolce','100% микрополиэстер',100,120,'плюш'],
+  ['ya-dolce-maxi','YarnArt','Dolce Maxi','100% микрополиэстер',200,70,'плюш'],
+  ['ya-velour','YarnArt','Velour','100% микрополиэстер',100,170,'плюш'],
+  ['ya-chenille','YarnArt','Chenille','100% микрополиэстер',100,90,'плюш'],
+  ['ya-mink','YarnArt','Mink','100% полиамид',50,75,'травка'],
+  ['ya-macrame','YarnArt','Macrame','100% полиэстер',90,130,'шнур'],
+  ['ya-macrame-cotton','YarnArt','Macrame Cotton VR','80% хлопок, 20% полиэстер',250,225,'шнур'],
+  ['ya-ambiance','YarnArt','Ambiance','20% шерсть, 80% акрил',100,250,'шерсть+акрил'],
+  ['ya-angora-star','YarnArt','Angora Star','20% шерсть, 80% акрил',100,500,'шерсть+акрил'],
+  ['ya-tweed','YarnArt','Tweed','30% шерсть, 65% акрил, 5% вискоза',100,280,'шерсть+акрил'],
+  ['ya-alpine','YarnArt','Alpine','45% шерсть, 55% акрил',150,103,'шерсть+акрил'],
+  ['al-cotton-gold','Alize','Cotton Gold','55% хлопок, 45% акрил',100,330,'хлопок+синтетика'],
+  ['al-cotton-baby-soft','Alize','Cotton Baby Soft','50% хлопок, 50% акрил',100,270,'хлопок+синтетика'],
+  ['al-bella','Alize','Bella','100% хлопок',50,180,'хлопок'],
+  ['al-miss','Alize','Miss','100% мерсеризованный хлопок',50,280,'мерс. хлопок'],
+  ['al-baby-best','Alize','Baby Best','90% акрил антипиллинг, 10% бамбук',100,240,'акрил'],
+  ['al-diva','Alize','Diva','100% микрофибра-акрил',100,350,'акрил'],
+  ['al-forever','Alize','Forever','100% микрофибра-акрил',100,300,'акрил'],
+  ['al-burcum','Alize','Burcum Klasik','100% акрил',100,210,'акрил'],
+  ['al-extra','Alize','Extra','100% акрил',100,220,'акрил'],
+  ['al-softy','Alize','Softy','100% микрополиэстер',50,115,'плюш'],
+  ['al-softy-plus','Alize','Softy Plus','100% микрополиэстер',100,120,'плюш'],
+  ['al-velluto','Alize','Velluto','100% микрополиэстер',100,68,'плюш'],
+  ['al-puffy','Alize','Puffy','100% микрополиэстер, готовые петли',100,9.2,'петельки'],
+  ['al-lanagold','Alize','Lanagold','49% шерсть, 51% акрил',100,240,'шерсть+акрил'],
+  ['al-angora-real-40','Alize','Angora Real 40','40% шерсть, 60% акрил',100,430,'шерсть+акрил'],
+  ['al-superlana-maxi','Alize','Superlana Maxi','25% шерсть, 75% акрил',100,100,'шерсть+акрил'],
+  ['al-alpaca-royal','Alize','Alpaca Royal','15% альпака, 30% шерсть, 55% акрил',100,250,'шерсть+акрил'],
+  ['al-superwash-comfort','Alize','Superwash Comfort','75% шерсть супервош, 25% полиамид',100,420,'шерсть'],
+  ['al-kid-royal','Alize','Kid Royal 50','62% кид мохер, 38% полиамид',50,500,'мохер'],
+  ['hi-dolphin-baby','Himalaya','Dolphin Baby','100% полиэстер',100,120,'плюш'],
+  ['hi-dolphin-fine','Himalaya','Dolphin Fine','100% полиэстер',100,175,'плюш'],
+  ['hi-velvet','Himalaya','Velvet','100% полиэстер',100,120,'плюш'],
+  ['hi-denim','Himalaya','Denim','100% хлопок',50,140,'хлопок'],
+  ['pe-detskiy-kapriz','Пехорка','Детский каприз','50% меринос, 50% фибра',50,225,'шерсть+акрил'],
+  ['pe-detskiy-hlopok','Пехорка','Детский хлопок','100% мерсеризованный хлопок',100,330,'мерс. хлопок'],
+  ['pe-azhurnaya','Пехорка','Ажурная','100% мерсеризованный хлопок',50,280,'мерс. хлопок'],
+  ['pe-beloe-kruzhevo','Пехорка','Белое кружево','100% мерсеризованный хлопок',50,475,'мерс. хлопок'],
+  ['pe-zhemchuzhnaya','Пехорка','Жемчужная','50% хлопок, 50% вискоза',100,425,'хлопок с льном или вискозой'],
+  ['pe-lnyanaya','Пехорка','Льняная','55% лён, 45% хлопок',100,330,'хлопок с льном или вискозой'],
+  ['pe-merinosovaya','Пехорка','Мериносовая','50% меринос, 50% акрил',100,200,'шерсть+акрил'],
+  ['pe-avstr-merinos','Пехорка','Австралийский меринос','95% меринос, 5% акрил',100,400,'шерсть'],
+  ['pe-derevenskaya','Пехорка','Деревенская','100% полугрубая шерсть',100,250,'шерсть'],
+  ['pe-detskaya-novinka','Пехорка','Детская новинка','100% акрил',50,200,'акрил'],
+  ['ka-bambino','Камтекс','Бамбино','35% меринос, 65% акрил',50,150,'шерсть+акрил'],
+  ['ka-karamelka','Камтекс','Карамелька','100% акрил',50,175,'акрил'],
+  ['ka-hlopok-merc','Камтекс','Хлопок мерсеризованный','100% мерсеризованный хлопок',50,200,'мерс. хлопок'],
+  ['ka-dendi','Камтекс','Денди','100% мерсеризованный хлопок',50,330,'мерс. хлопок'],
+  ['ka-garmoniya','Камтекс','Гармония','50% шерсть, 50% акрил',100,245,'шерсть+акрил'],
+  ['ka-severyanka','Камтекс','Северянка','30% шерсть, 5% верблюжья шерсть, 65% акрил',100,150,'шерсть+акрил'],
+  ['ga-baby-cotton','Gazzal','Baby Cotton','60% хлопок, 40% акрил',50,165,'хлопок+синтетика'],
+  ['ga-jeans','Gazzal','Jeans','58% хлопок, 42% акрил',50,170,'хлопок+синтетика'],
+  ['ga-giza','Gazzal','Giza','100% мерсеризованный хлопок',50,125,'мерс. хлопок'],
+  ['ga-organic-baby-cotton','Gazzal','Organic Baby Cotton','100% органический хлопок',50,115,'хлопок'],
+  ['ga-baby-wool','Gazzal','Baby Wool','40% меринос, 20% кашемир ПА, 40% акрил',50,175,'шерсть+акрил'],
+  ['ga-baby-alpaca','Gazzal','Baby Alpaca','55% беби альпака, 45% меринос',50,160,'альпака'],
+  ['dr-paris','DROPS','Paris','100% хлопок',50,75,'хлопок'],
+  ['dr-muskat','DROPS','Muskat','100% хлопок',50,100,'хлопок'],
+  ['dr-safran','DROPS','Safran','100% хлопок',50,160,'хлопок'],
+  ['dr-loves-you-7','DROPS','Loves You 7','100% хлопок',50,170,'хлопок'],
+  ['dr-cotton-light','DROPS','Cotton Light','50% хлопок, 50% полиэстер',50,105,'хлопок+синтетика'],
+  ['dr-bomull-lin','DROPS','Bomull-Lin','53% хлопок, 47% лён',50,85,'хлопок с льном или вискозой'],
+  ['dr-belle','DROPS','Belle','53% хлопок, 33% вискоза, 14% лён',50,120,'хлопок с льном или вискозой'],
+  ['dr-baby-merino','DROPS','Baby Merino','100% шерсть мериноса',50,175,'шерсть'],
+  ['dr-merino-extra-fine','DROPS','Merino Extra Fine','100% шерсть мериноса',50,105,'шерсть'],
+  ['dr-karisma','DROPS','Karisma','100% шерсть',50,100,'шерсть'],
+  ['dr-nepal','DROPS','Nepal','65% шерсть, 35% альпака',50,75,'шерсть'],
+  ['dr-alpaca','DROPS','Alpaca','100% альпака',50,167,'альпака'],
+  ['dr-air','DROPS','Air','65% альпака, 28% полиамид, 7% шерсть',50,150,'альпака'],
+  ['dr-kid-silk','DROPS','Kid-Silk','75% мохер, 25% шёлк',25,210,'мохер'],
+  ['vi-coco','Vita Cotton','Coco','100% мерсеризованный хлопок',50,240,'мерс. хлопок'],
+].map(([id, brand, name, comp, g, m, fiber]) => ({ id, brand, name, comp, g, m, fiber }));
+const REFMAP = Object.fromEntries(REF.map(r => [r.id, r]));
+const FIBERS = {
+  'хлопок':'plant','мерс. хлопок':'plant','хлопок+синтетика':'plant','хлопок с льном или вискозой':'plant',
+  'шерсть':'animal','шерсть+акрил':'animal','альпака':'animal','мохер':'animal',
+  'акрил':'synth','плюш':'plush','травка':'fancy','петельки':'fancy','шнур':'cord','другое':'other'
+};
+const THICK = ['ниточная','очень тонкая','тонкая','средняя','толстая','очень толстая'];
+const m100 = y => y.m / y.g * 100;
+function thick(y) { const v = m100(y); return v >= 600 ? THICK[0] : v >= 400 ? THICK[1] : v >= 250 ? THICK[2] : v >= 150 ? THICK[3] : v >= 80 ? THICK[4] : THICK[5]; }
+function hookFor(y) {
+  if (!y || !y.g || !y.m) return '';
+  if (y.fiber === 'петельки') return 'руками, без крючка';
+  if (y.fiber === 'мохер') return '3–5 (ажурно)';
+  const v = m100(y);
+  const T = [[800,1,1.5],[600,1.25,1.75],[450,1.5,2.25],[350,2,2.75],[280,2.5,3.5],[220,3,4],[180,3.5,4.5],[140,4,5],[110,5,6],[80,6,7],[55,7,9],[30,9,12]];
+  let lo = 12, hi = 15;
+  for (const [min, a, b] of T) { if (v >= min) { lo = a; hi = b; break; } }
+  if (y.fiber === 'плюш') lo = Math.max(lo, 3.5);
+  return `${fmt(lo, 2)}–${fmt(hi, 2)}`;
+}
+function inferFiber(comp) {
+  const c = String(comp || '').toLowerCase();
+  if (!c) return 'другое';
+  if (/мерсер/.test(c)) return 'мерс. хлопок';
+  if (/мохер/.test(c)) return 'мохер';
+  if (/альпак/.test(c) && !/акрил/.test(c)) return 'альпака';
+  if (/микрополи|плюш|шенил|велюр/.test(c)) return 'плюш';
+  if (/хлоп/.test(c) && /(лён|лен|виск|конопл)/.test(c)) return 'хлопок с льном или вискозой';
+  if (/хлоп/.test(c) && /(акрил|полиэ|полиам|нейлон)/.test(c)) return 'хлопок+синтетика';
+  if (/хлоп/.test(c)) return 'хлопок';
+  if (/(шерст|меринос|альпак|кашемир|верблюж)/.test(c) && /(акрил|фибр|полиам|нейлон)/.test(c)) return 'шерсть+акрил';
+  if (/(шерст|меринос|кашемир|верблюж)/.test(c)) return 'шерсть';
+  if (/(акрил|микрофибр)/.test(c)) return 'акрил';
+  if (/полиамид/.test(c)) return 'травка';
+  if (/полиэ/.test(c)) return 'шнур';
+  return 'другое';
+}
+function fiberPenalty(a, b) {
+  if (a === b) return 0;
+  const ga = FIBERS[a] || 'other', gb = FIBERS[b] || 'other';
+  if (ga === gb && ga !== 'other') return 0.12;
+  const pair = [a, b].sort().join('|');
+  if (['акрил|шерсть+акрил', 'акрил|хлопок+синтетика'].includes(pair)) return 0.2;
+  return 0.5;
+}
+
+/* ---------- Петли и символы ---------- */
+const STITCH = {
+  ch:   { ru:'вп', rn:'воздушная петля', us:'ch', un:'chain' },
+  sl:   { ru:'сс', rn:'соединительный столбик', us:'sl st', un:'slip stitch' },
+  sc:   { ru:'сбн', rn:'столбик без накида', us:'sc', un:'single crochet' },
+  hdc:  { ru:'пст', rn:'полустолбик с накидом', us:'hdc', un:'half double crochet' },
+  dc:   { ru:'ссн', rn:'столбик с накидом', us:'dc', un:'double crochet' },
+  tr:   { ru:'сс2н', rn:'столбик с двумя накидами', us:'tr', un:'treble crochet' },
+  inc:  { ru:'пр', rn:'прибавка: 2 сбн в одну петлю', us:'inc', un:'2 sc in one stitch' },
+  inc3: { ru:'3 в 1', rn:'3 сбн в одну петлю', us:'3 sc in 1', un:'3 sc in one stitch' },
+  dec:  { ru:'уб', rn:'убавка: 2 сбн вместе', us:'dec', un:'sc2tog' },
+  dcinc:{ ru:'2 ссн в 1', rn:'2 ссн в одну петлю', us:'2 dc in 1', un:'2 dc in one stitch' },
+  dcdec:{ ru:'2 ссн вм.', rn:'2 ссн вместе', us:'dc2tog', un:'dc2tog' },
+  blo:  { ru:'сбн з/с', rn:'сбн за заднюю стенку', us:'sc BLO', un:'sc in back loop only' },
+  flo:  { ru:'сбн п/с', rn:'сбн за переднюю стенку', us:'sc FLO', un:'sc in front loop only' },
+  pc:   { ru:'пышн.', rn:'пышный столбик или попкорн', us:'puff', un:'puff or popcorn' },
+  picot:{ ru:'пико', rn:'пико', us:'picot', un:'picot' },
+  sk:   { ru:'пропуск', rn:'пропустить петлю', us:'sk', un:'skip' },
+};
+const PROD = { sc:1, hdc:1, dc:1, tr:1, blo:1, flo:1, pc:1, inc:2, inc3:3, dcinc:2, dec:1, dcdec:1, ch:1, sl:0, sk:0, picot:0 };
+const CONS = { sc:1, hdc:1, dc:1, tr:1, blo:1, flo:1, pc:1, inc:1, inc3:1, dcinc:1, dec:2, dcdec:2, ch:0, sl:1, sk:1, picot:0 };
+const CHECKABLE = new Set(['sc','hdc','dc','tr','blo','flo','pc','inc','inc3','dcinc','dec','dcdec']);
+
+function sym(code, x, y, rot, cls, s = 7) {
+  const r = v => +(v * s).toFixed(2);
+  const P = d => `<path d="${d}"/>`;
+  let g = '';
+  switch (code) {
+    case 'sc': g = P(`M${r(-.6)} ${r(-.6)}L${r(.6)} ${r(.6)}M${r(.6)} ${r(-.6)}L${r(-.6)} ${r(.6)}`); break;
+    case 'blo': g = P(`M${r(-.55)} ${r(-.75)}L${r(.55)} ${r(.35)}M${r(.55)} ${r(-.75)}L${r(-.55)} ${r(.35)}M${r(-.6)} ${r(.75)}Q0 ${r(1.35)} ${r(.6)} ${r(.75)}`); break;
+    case 'flo': g = P(`M${r(-.55)} ${r(-.35)}L${r(.55)} ${r(.75)}M${r(.55)} ${r(-.35)}L${r(-.55)} ${r(.75)}M${r(-.6)} ${r(-.75)}Q0 ${r(-1.35)} ${r(.6)} ${r(-.75)}`); break;
+    case 'hdc': g = P(`M0 ${r(1)}V${r(-1)}M${r(-.6)} ${r(-1)}H${r(.6)}`); break;
+    case 'dc': g = P(`M0 ${r(1.1)}V${r(-1.1)}M${r(-.6)} ${r(-1.1)}H${r(.6)}M${r(-.45)} ${r(.25)}L${r(.45)} ${r(-.25)}`); break;
+    case 'tr': g = P(`M0 ${r(1.3)}V${r(-1.3)}M${r(-.6)} ${r(-1.3)}H${r(.6)}M${r(-.45)} ${r(.45)}L${r(.45)} ${r(-.05)}M${r(-.45)} ${r(-.1)}L${r(.45)} ${r(-.6)}`); break;
+    case 'inc': g = P(`M${r(-.7)} ${r(-.8)}L0 ${r(.8)}L${r(.7)} ${r(-.8)}`); break;
+    case 'inc3': g = P(`M${r(-.8)} ${r(-.7)}L0 ${r(.8)}L${r(.8)} ${r(-.7)}M0 ${r(.8)}V${r(-.85)}`); break;
+    case 'dec': g = P(`M${r(-.7)} ${r(.8)}L0 ${r(-.8)}L${r(.7)} ${r(.8)}`); break;
+    case 'dcinc': g = P(`M0 ${r(1.1)}L${r(-.7)} ${r(-1)}M0 ${r(1.1)}L${r(.7)} ${r(-1)}M${r(-1.1)} ${r(-1)}H${r(-.35)}M${r(.35)} ${r(-1)}H${r(1.1)}`); break;
+    case 'dcdec': g = P(`M${r(-.75)} ${r(1.1)}L0 ${r(-1)}L${r(.75)} ${r(1.1)}M${r(-.5)} ${r(-1)}H${r(.5)}`); break;
+    case 'ch': g = `<ellipse rx="${r(.62)}" ry="${r(.34)}"/>`; break;
+    case 'sl': g = `<ellipse class="f" rx="${r(.38)}" ry="${r(.26)}"/>`; break;
+    case 'pc': g = `<ellipse rx="${r(.42)}" ry="${r(.95)}"/>` + P(`M${r(-.5)} ${r(1.1)}H${r(.5)}`); break;
+    case 'picot': g = `<circle cy="${r(-.4)}" r="${r(.45)}"/><circle class="f" cy="${r(.35)}" r="${r(.16)}"/>`; break;
+    case 'sk': g = `<circle class="f" r="${r(.12)}"/>`; break;
+    default: return '';
+  }
+  return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(1)})"${cls ? ` class="${cls}"` : ''}>${g}</g>`;
+}
+function ringIcon(size, cls) {
+  let s = `<svg viewBox="-30 -30 60 60" width="${size}" height="${size}" class="ic ${cls || ''}" aria-hidden="true"><circle r="5" class="mrc"/>`;
+  for (let i = 0; i < 6; i++) { const t = i * 60; s += sym('sc', 12 * Math.sin(t * Math.PI / 180), -12 * Math.cos(t * Math.PI / 180), t, ''); }
+  for (let i = 0; i < 12; i++) { const t = i * 30 + 15; s += sym(i % 2 ? 'sc' : 'inc', 22 * Math.sin(t * Math.PI / 180), -22 * Math.cos(t * Math.PI / 180), t, 'alt'); }
+  return s + '</svg>';
+}
+
+function rowStitches(row) {
+  const out = [];
+  const add = list => { for (const [code, k] of list) { for (let i = 0; i < k && out.length < 600; i++) out.push(code); } };
+  add(row.pre || []);
+  for (let t = 0; t < (row.times || 1); t++) add(row.seq || []);
+  add(row.post || []);
+  return out;
+}
+const isRange = n => /\d\s*[–—-]\s*\d/.test(String(n || ''));
+function checkPart(part) {
+  const res = part.rows.map(() => ({ status: null }));
+  let prev = null;
+  part.rows.forEach((row, i) => {
+    if (!row.seq.length) { prev = null; return; }
+    const st = rowStitches(row);
+    if (!st.length || !st.every(c => CHECKABLE.has(c))) { prev = null; return; }
+    const produced = st.reduce((a, c) => a + PROD[c], 0);
+    const consumed = st.reduce((a, c) => a + CONS[c], 0);
+    const issues = [];
+    if (row.count != null && row.count !== produced) issues.push(`по записи выходит ${produced} п., а указано ${row.count}`);
+    if (part.shape === 'round') {
+      if (!row.mr && prev != null && consumed !== prev) issues.push(`ряд вяжется в ${consumed} п., а в предыдущем ${prev}`);
+      if (isRange(row.n) && !row.mr && consumed !== produced) issues.push('в повторяющихся рядах меняется число петель');
+    }
+    res[i] = { status: issues.length ? 'bad' : 'ok', produced, msg: issues.join('; ') };
+    prev = produced;
+  });
+  return res;
+}
+
+function roundChart(part) {
+  const rows = part.rows.filter(r => r.seq.length).slice(0, 26);
+  if (!rows.length) return '';
+  const st = rows.map(r => rowStitches(r).slice(0, 360));
+  const R = []; let cur = 0;
+  st.forEach((s, i) => {
+    const need = s.length * 15 / (2 * Math.PI - 0.5);
+    const base = i === 0 ? (rows[0].mr ? 24 : 30) : cur + 24;
+    cur = Math.max(base, need); R.push(cur);
+  });
+  const size = Math.ceil(R[R.length - 1] * 2 + 56), c = size / 2;
+  let o = `<svg class="chart round" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" style="max-width:${size}px" role="img" aria-label="Графическая схема детали «${esc(part.name)}»">`;
+  if (rows[0].mr) o += `<circle class="mrc" cx="${c}" cy="${c}" r="${Math.max(6, R[0] - 13).toFixed(1)}"/>`;
+  R.forEach(r => { o += `<circle class="ring" cx="${c}" cy="${c}" r="${r.toFixed(1)}"/>`; });
+  st.forEach((s, i) => {
+    const n = s.length, gap = Math.min(1.4, Math.max(0.28, 30 / R[i]));
+    s.forEach((code, j) => {
+      const th = gap / 2 + (j + 0.5) * (2 * Math.PI - gap) / n;
+      o += sym(code, c + R[i] * Math.sin(th), c - R[i] * Math.cos(th), th * 180 / Math.PI, i % 2 ? 'alt' : '');
+    });
+    o += `<text x="${c}" y="${(c - R[i] + 3.5).toFixed(1)}" text-anchor="middle">${esc(rows[i].n)}</text>`;
+  });
+  return o + '</svg>';
+}
+function flatChart(part) {
+  const rows = part.rows.filter(r => r.seq.length).slice(0, 24);
+  if (!rows.length) return '';
+  const st = rows.map(r => rowStitches(r).slice(0, 80));
+  const w = 19, rh = 34, padX = 54, padY = 14;
+  const maxN = Math.max(1, ...st.map(s => s.length));
+  const W = padX * 2 + maxN * w, H = padY * 2 + rows.length * rh;
+  let o = `<svg class="chart flat" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Графическая схема детали «${esc(part.name)}»">`;
+  st.forEach((s, i) => {
+    const y = H - padY - (i + 0.5) * rh, n = s.length, x0 = padX + (maxN - n) * w / 2, rtl = i % 2 === 0;
+    o += `<line class="ring" x1="${padX - 6}" x2="${W - padX + 6}" y1="${(y + rh / 2).toFixed(1)}" y2="${(y + rh / 2).toFixed(1)}"/>`;
+    s.forEach((code, j) => { const k = rtl ? n - 1 - j : j; o += sym(code, x0 + (k + 0.5) * w, y, 0, i % 2 ? 'alt' : ''); });
+    const lbl = esc(rows[i].n);
+    o += rtl ? `<text x="${W - padX + 10}" y="${(y + 3.5).toFixed(1)}" text-anchor="start">← ${lbl}</text>` : `<text x="${padX - 10}" y="${(y + 3.5).toFixed(1)}" text-anchor="end">${lbl} →</text>`;
+  });
+  return o + '</svg>';
+}
+
+/* ---------- Пример (показывается до первой схемы) ---------- */
+const EXAMPLE = {
+  title: 'Мячик-погремушка',
+  summary: 'Плотный круглый мячик для малыша: вяжется одной деталью по спирали, внутрь можно вложить капсулу-погремушку.',
+  difficulty: 'начальный', finishedSize: 'Ø ≈ 4,5 см', hook: '2,5 мм', gauge: '≈ 13 сбн × 14 рядов в 5 см',
+  materials: [{ yarnId: 'ya-jeans', yarn: 'YarnArt Jeans', color: 'солнечно-жёлтый', hex: '#F2C14E', meters: 18, grams: 6, use: 'весь мячик' }],
+  notions: ['Наполнитель холлофайбер — около 5 г', 'Капсула-погремушка Ø 2,5–3 см, по желанию', 'Маркер начала круга', 'Игла с широким ушком'],
+  parts: [{
+    name: 'Мячик', qty: 1, color: 'солнечно-жёлтый', shape: 'round', chart: true,
+    intro: 'Вяжите по спирали, не соединяя круги. Отмечайте маркером первую петлю каждого круга.',
+    rows: [
+      { n:'1', text:'6 сбн в КА', count:6, mr:true, seq:[['sc',6]], times:1, pre:[], post:[] },
+      { n:'2', text:'6 пр', count:12, mr:false, seq:[['inc',1]], times:6, pre:[], post:[] },
+      { n:'3', text:'(1 сбн, пр) × 6', count:18, mr:false, seq:[['sc',1],['inc',1]], times:6, pre:[], post:[] },
+      { n:'4', text:'(2 сбн, пр) × 6', count:24, mr:false, seq:[['sc',2],['inc',1]], times:6, pre:[], post:[] },
+      { n:'5', text:'(3 сбн, пр) × 6', count:30, mr:false, seq:[['sc',3],['inc',1]], times:6, pre:[], post:[] },
+      { n:'6', text:'(4 сбн, пр) × 6', count:36, mr:false, seq:[['sc',4],['inc',1]], times:6, pre:[], post:[] },
+      { n:'7–12', text:'36 сбн', count:36, mr:false, seq:[['sc',36]], times:1, pre:[], post:[] },
+      { n:'13', text:'(4 сбн, уб) × 6', count:30, mr:false, seq:[['sc',4],['dec',1]], times:6, pre:[], post:[] },
+      { n:'14', text:'(3 сбн, уб) × 6. Вложите капсулу и начните набивать', count:24, mr:false, seq:[['sc',3],['dec',1]], times:6, pre:[], post:[] },
+      { n:'15', text:'(2 сбн, уб) × 6', count:18, mr:false, seq:[['sc',2],['dec',1]], times:6, pre:[], post:[] },
+      { n:'16', text:'(1 сбн, уб) × 6. Добавьте наполнитель', count:12, mr:false, seq:[['sc',1],['dec',1]], times:6, pre:[], post:[] },
+      { n:'17', text:'6 уб', count:6, mr:false, seq:[['dec',1]], times:6, pre:[], post:[] },
+    ],
+    finish: 'Оставьте нить 15 см, стяните 6 петель последнего круга и закрепите.'
+  }],
+  assembly: ['Перед 14-м кругом вложите капсулу-погремушку.', 'Набивайте плотно, но так, чтобы наполнитель не просвечивал между петлями.', 'Стяните отверстие, спрячьте конец нити внутрь мячика.'],
+  tips: ['Если между петлями видно наполнитель, возьмите крючок на 0,5 мм тоньше.', 'Для малышей капсулу лучше зашить в мешочек из ткани.'],
+  assumptions: []
+};
+
+/* ---------- Состояние ---------- */
+const TYPES = [
+  { id:'toy',  label:'Игрушка амигуруми',     size:'Высота около 20 см', desc:'Например: сидячий зайка в платье в горошек, длинные уши, глазки вышиты — подарок малышу' },
+  { id:'wear', label:'Одежда',                size:'Обхват груди 92 см, длина 60 см, рукав 58 см', desc:'Например: свободный летний топ с V-образным вырезом и ажурным низом, без рукавов' },
+  { id:'bag',  label:'Сумка, аксессуар',      size:'Сумка 30 × 25 см, ручки 50 см', desc:'Например: шоппер из шнура с плотным овальным дном и длинными ручками' },
+  { id:'home', label:'Плед, салфетка, декор', size:'Плед 100 × 130 см или салфетка Ø 30 см', desc:'Например: детский плед из бабушкиных квадратов в трёх цветах' },
+  { id:'other',label:'Другое',                size:'Размер в сантиметрах', desc:'Опишите, что хотите связать' },
+];
+const LEVELS = [
+  { id:'beg', label:'Только учусь',  p:'начинающий: простые петли, подробные пояснения к каждому приёму' },
+  { id:'mid', label:'Вяжу уверенно', p:'средний: знает основные петли и умеет читать схемы' },
+  { id:'pro', label:'Люблю сложное', p:'опытный: можно сложные узоры и приёмы, текст лаконичный' },
+];
+const NOTAS = [
+  { id:'ru', label:'Русские: сбн, ссн',     p:'русские сокращения — вп, сс, сбн, пст, ссн, сс2н, пр (прибавка), уб (убавка), КА (кольцо амигуруми)' },
+  { id:'us', label:'Американские: sc, dc', p:'американские термины — ch, sl st, sc, hdc, dc, tr, inc, dec, MR (magic ring)' },
+];
+const HOOKS = [1,1.25,1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5,3.75,4,4.5,5,5.5,6,6.5,7,8,9,10,12,15];
+
+const S = {
+  type: 'toy', level: 'mid', nota: 'ru', photos: [], sel: [], pickSrc: null,
+  sample: undefined, imgLimits: null, downloads: null, genBlocked: null,
+  current: null, busy: null, tab: 'new', analog: null, needSk: 4,
+  refFilter: { q: '', thick: '', fiber: '' }, editStash: null, sfRef: null, savedCtx: null,
+};
+
+/* ---------- Хранилище ---------- */
+const store = {
+  mode: 'starting', db: null, uid: null,
+  data: { stash: [], patterns: [] }, subs: { stash: [], patterns: [] }, unsubs: [],
+  on(kind, fn) { this.subs[kind].push(fn); },
+  emit(kind) { this.subs[kind].forEach(fn => fn(this.data[kind])); },
+  col(kind) { return this.db.doc(`data/users/${this.uid}/${kind}`).collection('items'); },
+  async init() {
+    let db = null, user = null, id = null;
+    if (C && typeof C.use === 'function') {
+      try { [db, user] = await Promise.all([C.use('db'), C.use('user')]); id = user ? await user.id() : null; } catch (e) { db = null; }
+    }
+    if (db && id) {
+      this.db = db; this.uid = id; this.mode = 'cloud';
+      this.listen('stash'); this.listen('patterns');
+    } else this.goLocal(false);
+    updateStatus();
+  },
+  listen(kind) {
+    try {
+      const u = this.col(kind).orderBy('createdAt', 'desc').onSnapshot(
+        snap => { if (this.mode !== 'cloud') return; this.data[kind] = snap.docs.map(d => ({ ...d.data(), id: d.id })); this.emit(kind); },
+        () => { if (this.mode === 'cloud') { this.goLocal(true); toast('Связь с хранилищем прервалась — дальше сохраняю в этом браузере.'); } }
+      );
+      this.unsubs.push(u);
+    } catch (e) { this.goLocal(true); }
+  },
+  goLocal(fromCloud) {
+    this.unsubs.forEach(u => { try { u(); } catch (e) {} });
+    this.unsubs = []; this.mode = 'local';
+    for (const kind of ['stash', 'patterns']) {
+      const local = lsGet(kind, []);
+      const merged = fromCloud ? [...local, ...this.data[kind].filter(x => !local.some(l => l.id === x.id))] : local;
+      merged.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      this.data[kind] = merged; this.emit(kind);
+    }
+    updateStatus();
+  },
+  saveLocal(kind) { if (!lsSet(kind, this.data[kind])) toast('Браузер не даёт сохранить данные — они пропадут после закрытия страницы.', 'bad'); },
+  async cloudTry(fn) {
+    try { await fn(); return 'ok'; }
+    catch (e) {
+      if (e && e.code === 'unavailable') { await sleep(700 + Math.random() * 900); try { await fn(); return 'ok'; } catch (e2) { e = e2; } }
+      if (e && e.code === 'quota_exceeded') { toast('Хранилище заполнено. Удалите старые схемы и попробуйте снова.', 'bad'); return 'fail'; }
+      if (e && ['invalid_argument', 'revoked', 'not_granted', 'capability_disabled', 'capability_removed'].includes(e.code)) {
+        this.goLocal(true); toast('Сохранить в аккаунте не получилось — сохраняю в этом браузере.'); return 'local';
+      }
+      toast('Не удалось сохранить. Проверьте связь и повторите.', 'bad'); return 'fail';
+    }
+  },
+  async put(kind, id, doc) {
+    if (this.mode === 'cloud') { const r = await this.cloudTry(() => this.col(kind).doc(id).set(doc)); if (r === 'ok') return true; if (r === 'fail') return false; }
+    const arr = this.data[kind].filter(x => x.id !== id);
+    arr.push({ ...doc, id }); arr.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    this.data[kind] = arr; this.saveLocal(kind); this.emit(kind); return true;
+  },
+  async patch(kind, id, fields) {
+    if (this.mode === 'cloud') { const r = await this.cloudTry(() => this.col(kind).doc(id).update(fields)); if (r === 'ok') return true; if (r === 'fail') return false; }
+    this.data[kind] = this.data[kind].map(x => x.id === id ? { ...x, ...fields } : x);
+    this.saveLocal(kind); this.emit(kind); return true;
+  },
+  async remove(kind, id) {
+    if (this.mode === 'cloud') { const r = await this.cloudTry(() => this.col(kind).doc(id).delete()); if (r === 'ok') return true; if (r === 'fail') return false; }
+    this.data[kind] = this.data[kind].filter(x => x.id !== id);
+    this.saveLocal(kind); this.emit(kind); return true;
+  },
+};
+const pend = {};
+function queuePatch(kind, id, fields, delay = 700) {
+  const k = kind + '/' + id;
+  const p = pend[k] || (pend[k] = { fields: {}, timer: null, chain: Promise.resolve() });
+  Object.assign(p.fields, fields);
+  clearTimeout(p.timer);
+  p.timer = setTimeout(() => { const f = p.fields; p.fields = {}; p.chain = p.chain.then(() => store.patch(kind, id, f)).catch(() => {}); }, delay);
+}
+function updateStatus() {
+  const el = $('#status');
+  const m = store.mode;
+  el.innerHTML = m === 'cloud' ? '<span class="dot on"></span><span>Сохраняется в вашем аккаунте</span>'
+    : m === 'local' ? '<span class="dot local"></span><span>Сохраняется в этом браузере</span>'
+    : '<span class="dot"></span><span>Подключаюсь…</span>';
+}
+
+/* ---------- Общие функции ---------- */
+function toast(msg, kind = '') {
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast show ' + kind;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { t.className = 'toast'; }, 4200);
+}
+function chips(el, items, val, onPick) {
+  el.innerHTML = items.map(it => `<button type="button" class="chip" data-v="${it.id}" aria-pressed="${it.id === val}">${esc(it.label)}</button>`).join('');
+  el.onclick = e => { const b = e.target.closest('.chip'); if (!b) return; $$('.chip', el).forEach(x => x.setAttribute('aria-pressed', String(x === b))); onPick(b.dataset.v); };
+}
+const stashItem = id => store.data.stash.find(s => s.id === id);
+const specLine = y => `${fmt(y.g)} г / ${fmt(y.m)} м · ${thick(y)}`;
+function resolveYarn(id, snap) {
+  if (!id) return null;
+  if (snap && snap[id]) return snap[id];
+  if (String(id).startsWith('s-')) { const s = stashItem(String(id).slice(2)); if (s) return { name: s.name, g: s.g, m: s.m, stashId: s.id, refId: s.refId || null }; }
+  const r = REFMAP[id];
+  if (r) return { name: `${r.brand} ${r.name}`, g: r.g, m: r.m, refId: r.id };
+  return null;
+}
+
+/* ---------- Форма генератора ---------- */
+function initForm() {
+  chips($('#typeChips'), TYPES, S.type, v => { S.type = v; applyTypeHints(); updateHookHint(); });
+  chips($('#levelChips'), LEVELS, S.level, v => { S.level = v; });
+  chips($('#notaChips'), NOTAS, S.nota, v => { S.nota = v; });
+  $('#hook').innerHTML = '<option value="auto">Пусть Claude подберёт</option>' + HOOKS.map(h => `<option value="${h}">${fmt(h, 2)} мм</option>`).join('');
+  applyTypeHints(); renderSel();
+
+  const inp = $('#photoInput'), drop = $('#drop');
+  inp.addEventListener('change', () => { addPhotos(inp.files); inp.value = ''; });
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer && e.dataTransfer.files) addPhotos(e.dataTransfer.files); });
+  $('#thumbs').addEventListener('click', e => {
+    const b = e.target.closest('[data-i]'); if (!b) return;
+    const i = +b.dataset.i; const p = S.photos[i]; if (p) URL.revokeObjectURL(p.url);
+    S.photos.splice(i, 1); renderThumbs();
+  });
+
+  $$('[data-pick]').forEach(b => b.addEventListener('click', () => openPicker(b.dataset.pick)));
+  $('#pickClose').addEventListener('click', () => { $('#picker').hidden = true; });
+  $('#pickQ').addEventListener('input', renderPick);
+  $('#pickList').addEventListener('click', e => { const b = e.target.closest('.pick'); if (b) { addSel(b.dataset.kind, b.dataset.id); $('#picker').hidden = true; } });
+  $('#yarnSel').addEventListener('input', e => { const t = e.target; if (t.dataset.i == null) return; const y = S.sel[+t.dataset.i]; if (y) y[t.dataset.f] = t.value; });
+  $('#yarnSel').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (b) { S.sel.splice(+b.dataset.del, 1); renderSel(); } });
+  $('#genForm').addEventListener('submit', generate);
+}
+function applyTypeHints() {
+  const t = TYPES.find(x => x.id === S.type);
+  $('#desc').placeholder = t.desc; $('#size').placeholder = t.size;
+}
+function addPhotos(files) {
+  const max = (S.imgLimits && S.imgLimits.maxCount) || 4;
+  for (const f of Array.from(files || [])) {
+    if (!/^image\/(jpeg|png|webp|gif)$/.test(f.type)) { toast('Подходят фото в формате JPEG, PNG, WebP или GIF.', 'bad'); continue; }
+    if (S.imgLimits && S.imgLimits.maxInputBytes && f.size > S.imgLimits.maxInputBytes) { toast('Фото слишком большое — выберите файл поменьше.', 'bad'); continue; }
+    if (S.photos.length >= max) { toast(`Можно прикрепить до ${max} фото.`); break; }
+    S.photos.push({ file: f, url: URL.createObjectURL(f) });
+  }
+  renderThumbs();
+}
+function renderThumbs() {
+  $('#thumbs').innerHTML = S.photos.map((p, i) => `<figure class="th"><img src="${p.url}" alt="Фото ${i + 1}"><button type="button" class="x" data-i="${i}" aria-label="Убрать фото ${i + 1}">×</button></figure>`).join('');
+}
+function openPicker(src) {
+  S.pickSrc = src; $('#picker').hidden = false; $('#pickQ').value = '';
+  $('#pickQ').placeholder = src === 'stash' ? 'Поиск в моей пряже' : 'Марка, название или состав';
+  renderPick(); $('#pickQ').focus();
+}
+function renderPick() {
+  const q = $('#pickQ').value.trim().toLowerCase(), list = $('#pickList');
+  let items;
+  if (S.pickSrc === 'stash') {
+    if (!store.data.stash.length) { list.innerHTML = '<p class="hint pad">В запасах пока пусто. Добавьте пряжу во вкладке «Моя пряжа» или выберите из справочника.</p>'; return; }
+    items = store.data.stash.map(s => ({ kind: 'stash', id: s.id, title: s.name, sub: `${s.colorName || 'цвет не указан'} · ${fmt(s.qty)} ${plural(s.qty, SK)} · ${fmt(s.g)} г / ${fmt(s.m)} м`, hex: s.hex, hay: `${s.name} ${s.colorName} ${s.comp}`.toLowerCase() }));
+  } else {
+    items = REF.map(r => ({ kind: 'ref', id: r.id, title: `${r.brand} ${r.name}`, sub: `${r.comp} · ${fmt(r.g)} г / ${fmt(r.m)} м`, hex: '', hay: `${r.brand} ${r.name} ${r.comp} ${r.fiber}`.toLowerCase() }));
+  }
+  if (q) items = items.filter(i => i.hay.includes(q));
+  list.innerHTML = items.length ? items.slice(0, 50).map(i => `<button type="button" class="pick" data-kind="${i.kind}" data-id="${esc(i.id)}"><span class="sw" style="--c:${isHex(i.hex) ? i.hex : 'var(--line)'}"></span><span><b>${esc(i.title)}</b><small>${esc(i.sub)}</small></span></button>`).join('')
+    : '<p class="hint pad">Ничего не нашлось. Попробуйте другое слово.</p>';
+}
+function addSel(kind, id) {
+  if (kind === 'stash') {
+    const s = stashItem(id); if (!s) return;
+    S.sel.push({ src: 'stash', stashId: s.id, refId: s.refId || null, name: s.name, comp: s.comp || '', g: s.g, m: s.m, fiber: s.fiber || inferFiber(s.comp), colorName: s.colorName || '', hex: isHex(s.hex) ? s.hex : '#d9cbb4' });
+  } else {
+    const r = REFMAP[id]; if (!r) return;
+    S.sel.push({ src: 'ref', stashId: null, refId: r.id, name: `${r.brand} ${r.name}`, comp: r.comp, g: r.g, m: r.m, fiber: r.fiber, colorName: '', hex: '#d9cbb4' });
+  }
+  renderSel();
+  const last = $$('#yarnSel input[data-f="colorName"]').pop(); if (last && !last.value) last.focus();
+}
+function renderSel() {
+  const el = $('#yarnSel');
+  el.innerHTML = S.sel.length ? S.sel.map((y, i) => `<div class="selrow">
+      <input type="color" value="${esc(y.hex)}" data-i="${i}" data-f="hex" aria-label="Оттенок пряжи ${esc(y.name)}">
+      <div class="selmain"><b>${esc(y.name)}</b><span class="muted">${esc(specLine(y))}${y.stashId ? ` · в запасах ${fmt((stashItem(y.stashId) || {}).qty)} мот.` : ''}</span>
+      <input type="text" value="${esc(y.colorName)}" data-i="${i}" data-f="colorName" placeholder="Цвет: например, молочный" aria-label="Название цвета"></div>
+      <button type="button" class="x" data-del="${i}" aria-label="Убрать ${esc(y.name)}">×</button></div>`).join('')
+    : '<p class="hint">Пряжа не выбрана — Claude предложит подходящую из справочника.</p>';
+  updateHookHint();
+}
+function updateHookHint() {
+  const y = S.sel[0];
+  $('#hookHint').textContent = y ? `По толщине пряжи: ${hookFor(y)} мм.${S.type === 'toy' ? ' Для игрушки обычно берут на 0,5–1 мм тоньше.' : ''}` : '';
+}
+function readForm() {
+  const photoCount = (S.imgLimits && S.photos.length) ? Math.min(S.photos.length, S.imgLimits.maxCount || S.photos.length) : 0;
+  return {
+    type: S.type, description: $('#desc').value.trim(), size: $('#size').value.trim(), photoCount,
+    level: S.level, nota: S.nota, hook: $('#hook').value, gSt: num($('#gSt').value), gRows: num($('#gRows').value),
+    careful: $('#careful').checked, stashOnly: $('#stashOnly').checked,
+    sel: S.sel.map((y, i) => ({ ...y, pid: 'y' + (i + 1) })),
+  };
+}
+
+/* ---------- Запрос к Claude ---------- */
+const CODES_TEXT = Object.entries(STITCH).map(([k, v]) => `${k} — ${v.ru} (${v.rn})`).join('; ');
+const SCHEMA = '{"title":"короткое название","summary":"1–2 предложения о том, что получится","difficulty":"начальный | средний | продвинутый","finishedSize":"размер готового изделия","hook":"2,5 мм","gauge":"плотность в 10 см (для игрушек — в 5 см)","materials":[{"yarnId":"id пряжи или null","yarn":"пряжа","color":"цвет","hex":"#RRGGBB","meters":0,"grams":0,"use":"для каких деталей"}],"notions":["наполнитель, глазки, маркер, игла и т. п. с количеством"],"parts":[{"name":"деталь","qty":1,"color":"цвет","shape":"round | flat | other","chart":false,"intro":"с чего начать, если нужно","rows":[{"n":"1","text":"инструкция ряда","count":6,"mr":true,"seq":[["sc",6]],"times":1,"pre":[],"post":[]}],"finish":"как закончить деталь"}],"assembly":["шаги сборки и оформления по порядку"],"tips":["советы"],"assumptions":["что пришлось додумать"]}';
+function buildPrompt(req, photosAttached = true) {
+  const T = TYPES.find(t => t.id === req.type) || TYPES[4];
+  const Lv = LEVELS.find(l => l.id === req.level) || LEVELS[1];
+  const N = NOTAS.find(n => n.id === req.nota) || NOTAS[0];
+  const L = [];
+  L.push('Ты — опытный дизайнер схем для вязания крючком. Составь по запросу подробную схему, по которой можно связать изделие. Пиши по-русски, коротко и точно, как в хороших журнальных схемах.');
+  L.push('', '## Запрос');
+  L.push(`Тип изделия: ${T.label}.`);
+  L.push(`Описание: ${req.description || 'нет, опирайся на фото'}.`);
+  L.push(`Размеры: ${req.size || 'не указаны — выбери обычный размер для такого изделия и укажи его в finishedSize'}.`);
+  if (req.photoCount && photosAttached) L.push(`Фото: прикреплено ${req.photoCount}. Определи по фото форму, пропорции, детали, цвета и фактуру вязания. Если описание расходится с фото, следуй описанию.`);
+  else if (req.photoCount) L.push('Фото было в исходном запросе, сейчас оно не приложено — опирайся на уже составленную схему.');
+  L.push(`Опыт вязальщицы: ${Lv.p}.`);
+  L.push(`Крючок: ${req.hook === 'auto' ? 'подбери сам под пряжу и изделие' : fmt(+req.hook, 2) + ' мм'}.`);
+  if (req.gSt || req.gRows) L.push(`Плотность образца этой пряжей и крючком: ${req.gSt ? fmt(req.gSt) + ' петель' : ''}${req.gSt && req.gRows ? ' и ' : ''}${req.gRows ? fmt(req.gRows) + ' рядов' : ''} в 10 см. Рассчитывай по ней.`);
+  else L.push('Плотность не указана — возьми типичную для этой пряжи и крючка и запиши её в gauge.');
+  L.push(`Обозначения в текстах рядов: ${N.p}.`);
+  L.push('', '## Пряжа');
+  const stash = store.data.stash;
+  if (req.sel.length) {
+    L.push('Используй эту пряжу (в materials.yarnId ставь её id):');
+    req.sel.forEach(y => L.push(`- id "${y.pid}": ${y.name} — ${y.comp || 'состав не указан'}; моток ${fmt(y.g)} г / ${fmt(y.m)} м; цвет: ${y.colorName || 'не указан'}${isHex(y.hex) ? ` (${y.hex})` : ''}${y.stashId && stashItem(y.stashId) ? `; в запасах ${fmt(stashItem(y.stashId).qty)} мот.` : ''}`));
+    L.push('Распредели цвета по деталям сам, если в описании не сказано иначе. Если нужен ещё цвет, возьми ту же пряжу другого цвета: yarnId той же пряжи, а цвет и hex укажи в materials.');
+  }
+  const useStash = req.stashOnly && stash.length;
+  if (useStash) {
+    L.push(req.sel.length ? 'Если выбранной пряжи не хватает, добери из запасов вязальщицы:' : 'Подбери пряжу только из запасов вязальщицы — по толщине, составу и цвету. Учитывай, сколько мотков есть:');
+    stash.forEach(s => L.push(`- id "s-${s.id}": ${s.name} — ${s.comp || 'состав не указан'}; моток ${fmt(s.g)} г / ${fmt(s.m)} м; цвет: ${s.colorName || 'не указан'}${isHex(s.hex) ? ` (${s.hex})` : ''}; есть ${fmt(s.qty)} мот.`));
+  }
+  if (!req.sel.length && !useStash) {
+    L.push('Пряжа не выбрана. Предложи подходящую из справочника (yarnId — id из справочника) и подбери цвета под фото или описание. Если ничего не подходит, опиши тип пряжи словами и поставь yarnId: null.');
+    L.push('Справочник (id | пряжа | состав | моток):');
+    REF.forEach(r => L.push(`${r.id} | ${r.brand} ${r.name} | ${r.comp} | ${fmt(r.g)} г / ${fmt(r.m)} м`));
+  }
+  L.push('', '## Правила');
+  L.push('1. Счёт петель должен сходиться. count — сколько петель получилось после ряда. В деталях shape "round" ряд вяжется во все петли предыдущего ряда, поэтому число петель, в которые он вяжется, равно count прошлого ряда. inc — 2 сбн в одну петлю (из 1 петли получается 2), dec — 2 сбн вместе (из 2 петель получается 1). Перед ответом пересчитай каждый ряд.');
+  L.push(`2. seq — машинная запись ряда: по ней сайт проверяет счёт и рисует схему. Заполняй seq у всех рядов деталей shape "round" и у всех деталей с chart: true. seq — список пар [код, количество]; весь seq повторяется times раз; pre и post — то, что вяжется до и после повторов. Коды: ${CODES_TEXT}. Если ряд нельзя записать этими кодами, не заполняй у него seq. Поля mr, times, pre, post пиши только когда они нужны.`);
+  L.push('   Примеры: «6 сбн в кольцо амигуруми» → {"n":"1","text":"6 сбн в КА","count":6,"mr":true,"seq":[["sc",6]]}; «(2 сбн, пр) × 6» → {"seq":[["sc",2],["inc",1]],"times":6,"count":24}; «3 вп, 11 ссн в кольцо» → {"seq":[["ch",3],["dc",11]],"mr":true}.');
+  L.push('3. Одинаковые ряды подряд объединяй: "n": "7–12", а text и seq описывают один такой ряд.');
+  L.push('4. Игрушки: по спирали, плотно, без дыр (крючок обычно на 0,5–1 мм тоньше, чем советует этикетка); укажи, когда набивать; для малышей — вышитые глазки вместо пластиковых.');
+  L.push('5. Одежда: рассчитай петли и ряды из плотности и мерок с прибавкой на свободу облегания; давай конкретные числа для пройм, горловины, рукавов; укажи размер, под который сделан расчёт.');
+  L.push('6. Пледы, салфетки, сумки: опиши раппорт, сколько раз его повторить и как выйти на нужный размер.');
+  L.push('7. chart: true ставь у 1–3 деталей, где рисунок схемы нужнее всего: круговые мотивы и салфетки, начало круговых деталей, раппорт узора. У детали с chart: true и shape "flat" записывай в rows только раппорт — до 30 петель в ряду и до 16 рядов — и скажи об этом в intro.');
+  L.push('8. Расход пряжи: оцени метры и граммы на каждый цвет по плотности и размерам, без запаса — запас добавит сайт.');
+  L.push('9. Текст ряда — до 150 знаков. Не повторяй одно и то же в tips и assembly.');
+  L.push('10. Если что-то неясно, прими разумное решение и запиши его в assumptions. Вопросов не задавай.');
+  L.push('', '## Ответ', 'Ответь одним JSON-объектом без текста до и после. Формат:', SCHEMA);
+  return L.join('\n');
+}
+function normSeq(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const it of v) {
+    if (!Array.isArray(it)) return [];
+    const code = String(it[0] || '').toLowerCase().trim(), k = Math.round(Number(it[1]));
+    if (!STITCH[code] || !Number.isFinite(k) || k < 1 || k > 400) return [];
+    out.push([code, k]);
+  }
+  return out;
+}
+function normPattern(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw { code: 'invalid_json' };
+  const s = v => (v == null ? '' : String(v)).trim();
+  const arr = v => Array.isArray(v) ? v : [];
+  const cnt = v => (v === null || v === undefined || v === '') ? null : (Number.isFinite(Number(v)) ? Number(v) : null);
+  const p = {
+    title: s(raw.title) || 'Схема', summary: s(raw.summary), difficulty: s(raw.difficulty), finishedSize: s(raw.finishedSize), hook: s(raw.hook), gauge: s(raw.gauge),
+    materials: arr(raw.materials).filter(m => m && typeof m === 'object').map(m => ({ yarnId: m.yarnId ? String(m.yarnId) : null, yarn: s(m.yarn), color: s(m.color), hex: isHex(m.hex) ? String(m.hex) : '', meters: num(m.meters), grams: num(m.grams), use: s(m.use) })),
+    notions: arr(raw.notions).map(s).filter(Boolean),
+    parts: arr(raw.parts).filter(pt => pt && typeof pt === 'object').map(pt => ({
+      name: s(pt.name) || 'Деталь', qty: Math.max(1, Math.round(num(pt.qty) || 1)), color: s(pt.color),
+      shape: ['round', 'flat'].includes(pt.shape) ? pt.shape : 'other', chart: !!pt.chart, intro: s(pt.intro), finish: s(pt.finish),
+      rows: arr(pt.rows).filter(r => r && typeof r === 'object').map(r => ({
+        n: s(r.n), text: s(r.text), count: cnt(r.count), mr: !!r.mr, seq: normSeq(r.seq),
+        times: Math.max(1, Math.min(200, Math.round(num(r.times) || 1))), pre: normSeq(r.pre), post: normSeq(r.post),
+      })).filter(r => r.text || r.seq.length),
+    })).filter(pt => pt.rows.length || pt.intro),
+    assembly: arr(raw.assembly).map(s).filter(Boolean), tips: arr(raw.tips).map(s).filter(Boolean), assumptions: arr(raw.assumptions).map(s).filter(Boolean),
+  };
+  if (!p.parts.length) throw { code: 'invalid_json' };
+  return p;
+}
+function sampleErrorText(e) {
+  switch (e && e.code) {
+    case 'cancelled': return null;
+    case 'not_granted': return 'Генератору нужно ваше разрешение на запросы к Claude. Обновите страницу и нажмите «Разрешить», когда Claude спросит.';
+    case 'sampling_disabled': case 'not_declared': case 'capability_disabled': case 'capability_removed': return 'В этом окне генератор недоступен. Откройте страницу в Claude — на claude.ai или в приложении.';
+    case 'rate_limited': return 'Сейчас слишком много запросов или закончился лимит Claude. Попробуйте чуть позже.';
+    case 'session_expired': return 'Сессия Claude закончилась. Войдите заново и обновите страницу.';
+    case 'image_rejected': return 'Фото не подошло. Нужен JPEG, PNG, WebP или GIF до 20 МБ — попробуйте другое фото.';
+    case 'images_unavailable': return 'Фото в этом окне отправить нельзя. Уберите фото и опишите изделие словами.';
+    case 'refused': return 'Claude не стал составлять эту схему. Измените описание и попробуйте снова.';
+    case 'prompt_too_large': return 'Запрос получился слишком большим. Сократите описание или уберите часть пряжи из списка.';
+    case 'invalid_json': case 'empty_completion': return 'Ответ пришёл неполным — так бывает с очень большими схемами. Попробуйте ещё раз или попросите меньше деталей.';
+    default: return 'Связь с Claude прервалась. Попробуйте ещё раз.';
+  }
+}
+const BLOCKING = ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'];
+function setGenAvailability() {
+  const btn = $('#goBtn'), note = $('#genNote');
+  if (S.sample === undefined) { note.textContent = ''; }
+  else if (!S.sample) { S.genBlocked = 'Генератор работает, когда страница открыта в Claude. Пряжа и справочник работают и здесь.'; }
+  if (S.genBlocked) { btn.disabled = true; note.textContent = S.genBlocked; }
+  else if (S.sample) { note.textContent = 'Схему составляет Claude от вашего имени, это расходует ваш лимит Claude. При первом запуске Claude попросит разрешение.'; }
+  btn.disabled = !!S.genBlocked || !!S.busy;
+  btn.textContent = S.busy ? 'Составляю схему…' : 'Составить схему';
+  $('#photoField').hidden = S.sample !== undefined && !S.imgLimits;
+  $('#photoNote').hidden = !(S.sample && !S.imgLimits);
+}
+function busyHTML(what) {
+  return `<div class="busy">${ringIcon(64, 'spinsvg')}<div><p class="stage">Claude изучает ${esc(what)} и продумывает детали…</p><p class="hint"><span class="secs">0</span> с · обычно от 30 секунд до 2 минут</p><div class="partsSeen"></div><div><button type="button" class="btn sm" data-stop>Остановить</button></div></div></div>`;
+}
+async function runClaude({ input, images, careful, container, what }) {
+  if (!S.sample) throw { code: 'sampling_disabled' };
+  const ctl = new AbortController(), t0 = Date.now();
+  container.innerHTML = busyHTML(what);
+  const secs = $('.secs', container), stage = $('.stage', container), seen = $('.partsSeen', container);
+  $('[data-stop]', container).addEventListener('click', () => ctl.abort());
+  const timer = setInterval(() => { secs.textContent = Math.round((Date.now() - t0) / 1000); }, 1000);
+  S.busy = ctl; setGenAvailability();
+  try {
+    const opts = {
+      signal: ctl.signal, cache: false, modelTier: careful ? 'complex' : 'default',
+      onText: ({ text }) => {
+        const t = text.match(/"title"\s*:\s*"([^"]{1,90})"/);
+        stage.textContent = t ? `Пишу схему «${t[1]}»…` : 'Пишу схему…';
+        const names = Array.from(text.matchAll(/"name"\s*:\s*"([^"]{1,60})"/g)).map(m => m[1]);
+        seen.innerHTML = names.map(n => `<span class="tag">${esc(n)}</span>`).join('');
+      },
+    };
+    if (images && images.length) opts.images = images;
+    const raw = await S.sample.json(input, opts);
+    return normPattern(raw);
+  } finally { clearInterval(timer); S.busy = null; setGenAvailability(); }
+}
+function makeSnap(req, p) {
+  const snap = {};
+  (req.sel || []).forEach(y => { snap[y.pid] = { name: y.name, g: y.g, m: y.m, stashId: y.stashId || null, refId: y.refId || null }; });
+  (p.materials || []).forEach(m => { if (m.yarnId && !snap[m.yarnId]) { const r = resolveYarn(m.yarnId, null); if (r) snap[m.yarnId] = r; } });
+  return snap;
+}
+async function makeThumb(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const side = 160, cv = document.createElement('canvas'); cv.width = side; cv.height = side;
+    const k = Math.max(side / img.naturalWidth, side / img.naturalHeight), w = img.naturalWidth * k, h = img.naturalHeight * k;
+    cv.getContext('2d').drawImage(img, (side - w) / 2, (side - h) / 2, w, h);
+    return cv.toDataURL('image/jpeg', 0.72);
+  } finally { URL.revokeObjectURL(url); }
+}
+async function generate(ev) {
+  if (ev) ev.preventDefault();
+  if (S.busy || S.genBlocked) return;
+  if (S.sample === undefined) { toast('Подключаюсь к Claude — попробуйте через пару секунд.'); return; }
+  const req = readForm(), err = $('#formErr');
+  if (!req.description && !req.photoCount) { err.textContent = S.photos.length ? 'Фото здесь отправить нельзя — опишите изделие словами.' : 'Опишите изделие или добавьте фото.'; err.hidden = false; $('#desc').focus(); return; }
+  err.hidden = true;
+  const pane = $('#resultPane');
+  if (window.matchMedia('(max-width: 980px)').matches) pane.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+  const files = req.photoCount ? S.photos.slice(0, req.photoCount).map(p => p.file) : [];
+  try {
+    const p = await runClaude({ input: buildPrompt(req), images: files, careful: req.careful, container: pane, what: req.photoCount ? 'фото и описание' : 'описание' });
+    let thumb = null;
+    if (files.length) { try { thumb = await makeThumb(files[0]); } catch (e) { thumb = null; } }
+    S.current = { pattern: p, req, snap: makeSnap(req, p), files, thumb, savedId: null, done: new Set() };
+    renderCurrent();
+  } catch (e) {
+    renderCurrent();
+    const msg = sampleErrorText(e);
+    if (msg) showAlert(pane, msg);
+    if (e && BLOCKING.includes(e.code)) { S.genBlocked = msg; setGenAvailability(); }
+  }
+}
+function showAlert(container, msg, kind = 'bad') {
+  const a = document.createElement('div'); a.className = 'alert ' + kind; a.textContent = msg;
+  const host = $('.res', container) || container; host.prepend(a);
+}
+
+/* ---------- Отрисовка схемы ---------- */
+function codesUsed(p) {
+  const set = new Set(); let mr = false;
+  p.parts.forEach(pt => pt.rows.forEach(r => { [...r.pre, ...r.seq, ...r.post].forEach(([c]) => set.add(c)); if (r.mr) mr = true; }));
+  return { codes: Object.keys(STITCH).filter(c => set.has(c)), mr };
+}
+function matHTML(m, snap) {
+  const y = resolveYarn(m.yarnId, snap);
+  let meters = m.meters, grams = m.grams;
+  if (meters == null && grams != null && y) meters = grams * y.m / y.g;
+  if (grams == null && meters != null && y) grams = meters * y.g / y.m;
+  let qtyHTML = '', stock = '';
+  if (y && meters != null && y.m) {
+    const sk = Math.max(1, Math.ceil(meters * 1.1 / y.m));
+    qtyHTML = `<b>${sk} ${plural(sk, SK)}</b><br>с запасом 10 %`;
+    if (y.stashId) {
+      const s = stashItem(y.stashId);
+      if (s) {
+        const have = (s.qty || 0) * s.m;
+        if (have >= meters * 1.1) stock = `<span class="badge ok">Хватит: в запасах ${fmt(s.qty)} ${plural(s.qty, SK)}</span>`;
+        else { const buy = Math.ceil((meters * 1.1 - have) / s.m); stock = `<span class="badge warn">Докупить ${buy} ${plural(buy, SK)}: в запасах ${fmt(s.qty)}</span>`; }
+      }
+    }
+  }
+  const name = y ? y.name : (m.yarn || 'Пряжа');
+  return `<div class="mat"><span class="ball" style="--c:${m.hex || 'var(--line)'}"></span>
+    <div class="mi"><b>${esc(name)}</b>${m.color ? ` · ${esc(m.color)}` : ''}<small>${esc(m.use)}${y ? `${m.use ? ' · ' : ''}${fmt(y.g)} г / ${fmt(y.m)} м в мотке` : ''}</small></div>
+    <div class="mq">≈ ${fmt(meters, 0)} м · ${fmt(grams, 0)} г${qtyHTML ? `<br>${qtyHTML}` : ''}</div>
+    ${stock ? `<div class="ms">${stock}</div>` : ''}</div>`;
+}
+function renderPattern(p, ctx) {
+  const nota = ctx.nota || 'ru';
+  const checks = p.parts.map(checkPart);
+  const bad = [];
+  let okCount = 0, totalRows = 0;
+  checks.forEach((ch, pi) => ch.forEach((r, ri) => { if (r.status === 'bad') bad.push({ pi, ri, msg: r.msg }); if (r.status === 'ok') okCount++; }));
+  p.parts.forEach(pt => { totalRows += pt.rows.length; });
+  const done = ctx.done || new Set();
+  const used = codesUsed(p);
+  const tag = (k, v) => v ? `<span class="tag"><i>${k}</i><b>${esc(v)}</b></span>` : '';
+  const legend = [
+    ...(used.mr ? [`<div class="lg"><svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true"><circle r="6" class="mrc" style="stroke:var(--muted);fill:none;stroke-width:1.4"/></svg><b>${nota === 'us' ? 'MR' : 'КА'}</b><span>${nota === 'us' ? 'magic ring' : 'кольцо амигуруми'}</span></div>`] : []),
+    ...used.codes.map(c => `<div class="lg"><svg width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true">${sym(c, 0, 0, 0, '')}</svg><b>${esc(nota === 'us' ? STITCH[c].us : STITCH[c].ru)}</b><span>${esc(nota === 'us' ? STITCH[c].un : STITCH[c].rn)}</span></div>`),
+  ].join('');
+  const interactive = !ctx.static && !ctx.example;
+  let h = '<div class="res">';
+  if (ctx.example) h += `<div class="example"><b>Пример.</b> Так выглядит готовая схема: текст по рядам, графическая схема и проверка счёта петель. Опишите своё изделие — Claude составит схему под вашу пряжу и размеры.</div>`;
+  h += `<header class="res-head">${ctx.static ? '' : '<span class="eyebrow">Схема</span>'}<h2 class="ptitle">${esc(p.title)}</h2>${p.summary ? `<p class="lead">${esc(p.summary)}</p>` : ''}
+    <div class="meta">${tag('Сложность', p.difficulty)}${tag('Размер', p.finishedSize)}${tag('Крючок', p.hook)}${tag('Плотность', p.gauge)}</div>`;
+  if (interactive && ctx.saved) h += `<div class="progress"><span class="bar"><i style="width:${totalRows ? Math.round(done.size / totalRows * 100) : 0}%"></i></span><span class="pdone">${done.size} из ${totalRows} рядов связано</span></div>`;
+  h += '</header>';
+  if (!ctx.static) {
+    if (bad.length) h += `<div class="alert bad"><span>Счёт петель не сошёлся в ${bad.length} ${plural(bad.length, ['ряду', 'рядах', 'рядах'])} — они отмечены ниже.</span>${interactive ? '<button type="button" class="btn sm" data-act="fixcount">Попросить Claude исправить</button>' : ''}</div>`;
+    else if (okCount) h += `<div class="alert ok">Счёт петель проверен в ${okCount} ${plural(okCount, ['ряду', 'рядах', 'рядах'])} — всё сходится.</div>`;
+  }
+  if (interactive) {
+    h += `<div class="actbar">${ctx.saved ? '' : (ctx.savedId ? '<button type="button" class="btn" disabled>Сохранено ✓</button>' : '<button type="button" class="btn primary" data-act="save">Сохранить в «Мои схемы»</button>')}
+      <button type="button" class="btn" data-act="copy">Скопировать текст</button>
+      <button type="button" class="btn dl" data-act="download">Скачать для печати</button>
+      ${ctx.saved ? '<button type="button" class="btn quiet danger" data-act="delete">Удалить схему</button>' : '<button type="button" class="btn quiet" data-act="another">Составить другую</button>'}</div>`;
+  }
+  h += `<section class="sec"><h3>Материалы</h3>${p.materials.length ? `<div class="mats">${p.materials.map(m => matHTML(m, ctx.snap)).join('')}</div>` : ''}${p.notions.length ? `<ul class="plain">${p.notions.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}</section>`;
+  if (legend) h += `<section class="sec"><h3>Условные обозначения</h3><div class="legend">${legend}</div></section>`;
+  h += `<section class="sec"><h3>Детали</h3>${interactive ? '<p class="hint">Нажмите на ряд, чтобы отметить его связанным.</p>' : ''}`;
+  p.parts.forEach((pt, pi) => {
+    const hasSeq = pt.rows.some(r => r.seq.length);
+    const chart = hasSeq ? (pt.shape === 'round' ? roundChart(pt) : flatChart(pt)) : '';
+    const how = pt.shape === 'round' ? 'Читается от центра: каждый круг — от номера по часовой стрелке. Символы показывают порядок петель, их положение условное.' : 'Читается снизу вверх, направление ряда — по стрелке. Положение символов условное.';
+    h += `<article class="part"><header><h4>${esc(pt.name)}</h4>${pt.qty > 1 ? `<span class="qty">× ${pt.qty}</span>` : ''}${pt.color ? `<span class="pcol">${esc(pt.color)}</span>` : ''}</header>
+      ${pt.intro ? `<p class="intro">${esc(pt.intro)}</p>` : ''}
+      ${chart ? (ctx.static ? `<div class="chartbox">${chart}</div>` : `<details${pt.chart ? ' open' : ''}><summary>Графическая схема</summary><div class="chartbox"><p class="hint">${how}</p>${chart}</div></details>`) : ''}
+      <div class="rows">${pt.rows.map((r, ri) => {
+        const ck = checks[pi][ri], key = `${pi}:${ri}`, isDone = done.has(key);
+        const cls = ['row', interactive ? 'tap' : '', isDone ? 'done' : '', ck.status === 'bad' && !ctx.static ? 'bad' : ''].filter(Boolean).join(' ');
+        const attrs = interactive ? ` role="button" tabindex="0" data-row="${key}" aria-pressed="${isDone}"` : '';
+        return `<div class="${cls}"${attrs}><span class="n">${esc(r.n)}</span><span class="t">${esc(r.text)}${ck.status === 'bad' && !ctx.static ? `<span class="warn">⚠ ${esc(ck.msg)}</span>` : ''}</span><span class="c">${r.count != null ? `(${r.count})` : ''}${ck.status === 'ok' && !ctx.static ? '<span class="okm" title="Счёт сходится">✓</span>' : ''}</span></div>`;
+      }).join('')}</div>
+      ${pt.finish ? `<p class="finish"><b>Окончание.</b> ${esc(pt.finish)}</p>` : ''}</article>`;
+  });
+  h += '</section>';
+  if (p.assembly.length) h += `<section class="sec"><h3>Сборка и оформление</h3><ol class="steps">${p.assembly.map(a => `<li>${esc(a)}</li>`).join('')}</ol></section>`;
+  if (p.tips.length) h += `<section class="sec"><h3>Советы</h3><ul class="plain">${p.tips.map(a => `<li>${esc(a)}</li>`).join('')}</ul></section>`;
+  if (p.assumptions.length) h += `<section class="sec"><h3>Что Claude додумал сам</h3><ul class="plain">${p.assumptions.map(a => `<li>${esc(a)}</li>`).join('')}</ul></section>`;
+  if (interactive) {
+    const k = ctx.saved ? 'sv' : 'cur';
+    h += `<section class="refine"><h3>Изменить схему</h3>
+      <div class="chips">${['Упростить для новичка', 'Сделать крупнее', 'Сделать меньше', 'Другие цвета', 'Добавить одежду или аксессуар'].map(t => `<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+      <textarea id="refine-${k}" rows="2" placeholder="Например: уши длиннее, платье без рукавов, добавить шарф"></textarea>
+      <div class="actions"><button type="button" class="btn primary" data-act="refine">Изменить</button></div></section>`;
+  }
+  return h + '</div>';
+}
+function renderCurrent() {
+  const pane = $('#resultPane');
+  if (!S.current) { pane.innerHTML = renderPattern(EXAMPLE, { example: true, nota: 'ru', snap: {} }); return; }
+  const c = S.current;
+  pane.innerHTML = renderPattern(c.pattern, { nota: c.req.nota, snap: c.snap, done: c.done, savedId: c.savedId });
+}
+
+/* ---------- Текст и печать ---------- */
+function patternText(p, snap) {
+  const L = [p.title.toUpperCase()];
+  if (p.summary) L.push(p.summary);
+  const meta = [p.difficulty && `Сложность: ${p.difficulty}`, p.finishedSize && `Размер: ${p.finishedSize}`, p.hook && `Крючок: ${p.hook}`, p.gauge && `Плотность: ${p.gauge}`].filter(Boolean);
+  if (meta.length) L.push(meta.join(' · '));
+  L.push('', 'МАТЕРИАЛЫ');
+  p.materials.forEach(m => { const y = resolveYarn(m.yarnId, snap); L.push(`— ${y ? y.name : m.yarn}${m.color ? ', ' + m.color : ''}: ≈ ${fmt(m.meters, 0)} м / ${fmt(m.grams, 0)} г${m.use ? ' (' + m.use + ')' : ''}`); });
+  p.notions.forEach(n => L.push(`— ${n}`));
+  p.parts.forEach(pt => {
+    L.push('', `${pt.name.toUpperCase()}${pt.qty > 1 ? ` × ${pt.qty}` : ''}${pt.color ? ` — ${pt.color}` : ''}`);
+    if (pt.intro) L.push(pt.intro);
+    pt.rows.forEach(r => L.push(`${r.n}: ${r.text}${r.count != null ? ` (${r.count})` : ''}`));
+    if (pt.finish) L.push(pt.finish);
+  });
+  if (p.assembly.length) { L.push('', 'СБОРКА'); p.assembly.forEach((a, i) => L.push(`${i + 1}. ${a}`)); }
+  if (p.tips.length) { L.push('', 'СОВЕТЫ'); p.tips.forEach(a => L.push(`— ${a}`)); }
+  return L.join('\n');
+}
+function printableHTML(p, ctx) {
+  const css = $('#mainCss').textContent;
+  const body = renderPattern(p, { ...ctx, static: true });
+  return `<!doctype html><html lang="ru" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.title)}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Unbounded:wght@500;700&display=swap">
+<style>${css}
+body{background:#fff;background-image:none;margin:0}.doc{max-width:860px;margin:0 auto;padding:28px 20px}.foot{margin-top:28px;color:#596572;font-size:12px}
+@media print{.doc{padding:0}.part{break-inside:auto}.chartbox,svg.chart{break-inside:avoid}.row{break-inside:avoid}}</style></head>
+<body><div class="doc">${body}<p class="foot">Составлено в «Петельке» с помощью Claude. Перед началом свяжите образец и сверьте плотность.</p></div></body></html>`;
+}
+const safeName = t => (String(t || '').replace(/[\\/:*?"<>|]+/g, '').trim().slice(0, 80) || 'Схема');
+
+/* ---------- Действия со схемой ---------- */
+function bindPatternEvents(container, getCtx) {
+  const toggle = row => {
+    const c = getCtx(); if (!c || !row) return;
+    const key = row.dataset.row;
+    if (c.done.has(key)) c.done.delete(key); else c.done.add(key);
+    const on = c.done.has(key);
+    row.classList.toggle('done', on); row.setAttribute('aria-pressed', String(on));
+    const total = c.pattern.parts.reduce((a, pt) => a + pt.rows.length, 0);
+    const pd = $('.pdone', container), bar = $('.bar i', container);
+    if (pd) pd.textContent = `${c.done.size} из ${total} рядов связано`;
+    if (bar) bar.style.width = (total ? Math.round(c.done.size / total * 100) : 0) + '%';
+    if (c.savedId) queuePatch('patterns', c.savedId, { done: Array.from(c.done), updatedAt: Date.now() }, 900);
+  };
+  container.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-row]')) { e.preventDefault(); toggle(e.target); } });
+  container.addEventListener('click', async e => {
+    const row = e.target.closest('[data-row]');
+    if (row && !e.target.closest('a,button')) { toggle(row); return; }
+    const q = e.target.closest('[data-quick]');
+    if (q) { const ta = $('.refine textarea', container); if (ta) { ta.value = q.dataset.quick; ta.focus(); } return; }
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const c = getCtx(); if (!c) return;
+    const act = b.dataset.act;
+    if (act === 'save') { await saveCurrent(); }
+    else if (act === 'copy') {
+      const txt = patternText(c.pattern, c.snap);
+      try { await navigator.clipboard.writeText(txt); toast('Текст схемы скопирован'); }
+      catch (err) {
+        const box = document.createElement('div'); box.className = 'copybox';
+        box.innerHTML = '<p class="hint">Скопировать автоматически не получилось. Текст выделен — нажмите Ctrl+C или «Копировать» в меню.</p><textarea rows="8" readonly></textarea>';
+        $('textarea', box).value = txt; b.closest('.actbar').after(box); const ta = $('textarea', box); ta.focus(); ta.select();
+      }
+    }
+    else if (act === 'download') {
+      if (!S.downloads) { toast('Скачивание в этом окне недоступно.', 'bad'); return; }
+      try { await S.downloads.save({ filename: safeName(c.pattern.title) + '.html', data: printableHTML(c.pattern, { nota: c.req.nota, snap: c.snap }) }); toast('Файл сохранён — откройте его в браузере и распечатайте.'); }
+      catch (err) { if (err && err.code !== 'declined') toast(err.code === 'rate_limited' ? 'Окно сохранения уже открыто.' : 'Не удалось сохранить файл.', 'bad'); }
+    }
+    else if (act === 'another') { $('#desc').focus(); $('#genForm').scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' }); }
+    else if (act === 'refine') { const ta = $('.refine textarea', container); const t = ta ? ta.value.trim() : ''; if (!t) { if (ta) ta.focus(); toast('Напишите, что изменить.'); return; } await refine(c, container, t); }
+    else if (act === 'fixcount') {
+      const lines = [];
+      c.pattern.parts.forEach((pt, pi) => checkPart(pt).forEach((r, ri) => { if (r.status === 'bad') lines.push(`«${pt.name}», ряд ${pt.rows[ri].n}: ${r.msg}`); }));
+      await refine(c, container, 'Исправь счёт петель, сохранив форму и размер изделия. Найденные ошибки: ' + lines.join('; '));
+    }
+    else if (act === 'delete') {
+      if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Точно удалить? Нажмите ещё раз'; setTimeout(() => { if (b.isConnected) { b.dataset.confirm = ''; b.textContent = 'Удалить схему'; } }, 5000); return; }
+      const ok = await store.remove('patterns', c.savedId);
+      if (ok) { toast('Схема удалена'); closeSaved(); }
+    }
+  });
+}
+async function refine(c, container, instruction) {
+  if (S.busy) { toast('Дождитесь, пока Claude закончит текущую схему.'); return; }
+  if (!S.sample || S.genBlocked) { toast(S.genBlocked || 'Генератор работает, когда страница открыта в Claude.', 'bad'); return; }
+  const files = c.files && c.files.length ? c.files : [];
+  const turns = [
+    { role: 'user', content: buildPrompt(c.req, files.length > 0) },
+    { role: 'assistant', content: JSON.stringify(c.pattern) },
+    { role: 'user', content: `Измени схему: ${instruction}\nВерни полную обновлённую схему тем же JSON-объектом — все детали и все ряды, не только изменённые. Сохрани формат полей и пересчитай петли.` },
+  ];
+  const rerender = () => { if (c === S.current) renderCurrent(); else renderSavedOne(); };
+  try {
+    const p = await runClaude({ input: turns, images: files, careful: c.req.careful, container, what: 'схему' });
+    c.pattern = p; c.done = new Set(); c.snap = { ...c.snap, ...makeSnap({ sel: [] }, p) };
+    if (c.savedId) {
+      const prev = store.data.patterns.find(x => x.id === c.savedId) || {};
+      await store.put('patterns', c.savedId, { ...stripId(prev), title: p.title, pattern: p, yarnSnap: c.snap, done: [], updatedAt: Date.now() });
+    }
+    rerender(); toast('Схема обновлена');
+  } catch (e) {
+    rerender(); const msg = sampleErrorText(e);
+    if (msg) showAlert(container, msg);
+    if (e && BLOCKING.includes(e.code)) { S.genBlocked = msg; setGenAvailability(); }
+  }
+}
+const stripId = o => { const { id, ...rest } = o || {}; return rest; };
+async function saveCurrent() {
+  const c = S.current; if (!c || c.savedId) return;
+  const id = newId();
+  const reqSave = { ...c.req, sel: c.req.sel.map(({ pid, src, stashId, refId, name, comp, g, m, fiber, colorName, hex }) => ({ pid, src, stashId, refId, name, comp, g, m, fiber, colorName, hex })) };
+  const doc = { title: c.pattern.title, type: c.req.type, createdAt: Date.now(), updatedAt: Date.now(), pattern: c.pattern, req: reqSave, yarnSnap: c.snap, thumb: c.thumb || null, done: Array.from(c.done) };
+  if (JSON.stringify(doc).length > 230000) doc.thumb = null;
+  const ok = await store.put('patterns', id, doc);
+  if (ok) { c.savedId = id; renderCurrent(); toast('Схема сохранена в «Мои схемы»'); }
+}
+
+/* ---------- Мои схемы ---------- */
+function renderSavedList() {
+  const el = $('#savedList'), list = store.data.patterns;
+  $('#nSaved').textContent = list.length || '';
+  if (S.savedCtx) return;
+  if (store.mode === 'starting') { el.innerHTML = '<p class="muted pad">Загружаю…</p>'; return; }
+  if (!list.length) {
+    el.innerHTML = `<div class="panel empty"><h3>Здесь будут ваши схемы</h3><p class="muted">Составьте схему во вкладке «Новая схема» и нажмите «Сохранить». В сохранённой схеме можно отмечать связанные ряды — прогресс запомнится.</p><button type="button" class="btn primary" data-go="new">Составить схему</button></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="vhead"><div><h2>Мои схемы</h2><p class="muted">${list.length} ${plural(list.length, ['схема', 'схемы', 'схем'])}</p></div></div><div class="scards">${list.map(d => {
+    const p = d.pattern || { parts: [], materials: [] };
+    const total = (p.parts || []).reduce((a, pt) => a + (pt.rows || []).length, 0), dn = (d.done || []).length;
+    const type = (TYPES.find(t => t.id === d.type) || TYPES[4]).label;
+    const date = d.createdAt ? new Date(d.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '';
+    const sw = (p.materials || []).slice(0, 3).map(m => `<span class="sw" style="--c:${isHex(m.hex) ? m.hex : 'var(--line)'};width:18px;height:18px"></span>`).join('');
+    return `<button type="button" class="panel scard" data-open="${esc(d.id)}"><span class="sthumb">${d.thumb ? `<img src="${esc(d.thumb)}" alt="">` : `<span style="display:flex;gap:2px">${sw || ringIcon(40, '')}</span>`}</span>
+      <span class="sbody"><b>${esc(d.title || p.title)}</b><small>${esc(type)}${date ? ' · ' + esc(date) : ''}</small><span class="progress"><span class="bar"><i style="width:${total ? Math.round(dn / total * 100) : 0}%"></i></span></span><small>${dn ? `${dn} из ${total} рядов связано` : `${total} ${plural(total, ['ряд', 'ряда', 'рядов'])}`}</small></span></button>`;
+  }).join('')}</div>`;
+}
+function openSaved(id) {
+  const d = store.data.patterns.find(x => x.id === id); if (!d || !d.pattern) return;
+  let pattern;
+  try { pattern = normPattern(d.pattern); } catch (e) { toast('Эту схему не удалось открыть.', 'bad'); return; }
+  S.savedCtx = { savedId: id, pattern, req: d.req || { type: d.type, sel: [], nota: 'ru', photoCount: 0 }, snap: d.yarnSnap || {}, done: new Set(d.done || []), files: [] };
+  if (!S.savedCtx.req.sel) S.savedCtx.req.sel = [];
+  $('#savedList').hidden = true; $('#savedOne').hidden = false;
+  renderSavedOne();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+function renderSavedOne() {
+  const c = S.savedCtx, el = $('#savedOne'); if (!c) return;
+  el.innerHTML = `<button type="button" class="btn quiet back" data-back>← Все схемы</button><div class="panel resultpane pbody">${renderPattern(c.pattern, { saved: true, nota: c.req.nota, snap: c.snap, done: c.done, savedId: c.savedId })}</div>`;
+}
+function closeSaved() { S.savedCtx = null; $('#savedOne').hidden = true; $('#savedOne').innerHTML = ''; $('#savedList').hidden = false; renderSavedList(); }
+
+/* ---------- Моя пряжа ---------- */
+function renderStash() {
+  const el = $('#stashList'), list = store.data.stash;
+  $('#nStash').textContent = list.length || '';
+  if (store.mode === 'starting') { el.innerHTML = '<p class="muted pad">Загружаю…</p>'; return; }
+  if (!list.length) {
+    $('#stashSummary').textContent = 'Мотки, которые есть дома. Генератор может подбирать схемы под них.';
+    el.innerHTML = `<div class="panel empty"><h3>Здесь будет ваша пряжа</h3><p class="muted">Добавьте мотки, которые есть дома. Марку можно найти в справочнике — тогда состав и метраж заполнятся сами. Потом генератор сможет подбирать схемы под эти запасы и считать, хватит ли пряжи.</p><button type="button" class="btn primary" data-act="stash-add">+ Добавить первую пряжу</button></div>`;
+    return;
+  }
+  const sk = list.reduce((a, s) => a + (s.qty || 0), 0), meters = list.reduce((a, s) => a + (s.qty || 0) * (s.m || 0), 0);
+  $('#stashSummary').textContent = `${list.length} ${plural(list.length, ['вид', 'вида', 'видов'])} · ${fmt(sk)} ${plural(sk, SK)} · ≈ ${meters >= 1000 ? fmt(meters / 1000, 1) + ' км' : fmt(meters, 0) + ' м'} нити`;
+  el.innerHTML = list.map(s => {
+    const y = { g: s.g, m: s.m, fiber: s.fiber || inferFiber(s.comp) };
+    return `<article class="panel ycard" data-id="${esc(s.id)}"><span class="ball" style="--c:${isHex(s.hex) ? s.hex : 'var(--line)'}"></span><div class="ybody">
+      <h4>${esc(s.name)}</h4><p class="yc">${esc(s.colorName || 'цвет не указан')}</p>${s.comp ? `<p class="muted">${esc(s.comp)}</p>` : ''}
+      <p class="spec">${fmt(s.g)} г / ${fmt(s.m)} м · ${thick(y)} · крючок ${hookFor(y)}</p>${s.note ? `<p class="note">${esc(s.note)}</p>` : ''}
+      <div class="qty"><button type="button" data-q="-1" aria-label="Минус моток">−</button><span><b>${fmt(s.qty)}</b> ${plural(s.qty, SK)} · ≈ ${fmt((s.qty || 0) * s.m, 0)} м</span><button type="button" data-q="1" aria-label="Плюс моток">+</button></div>
+      <div class="yact"><button type="button" class="btn sm" data-sa="use">Вязать из неё</button><button type="button" class="btn sm quiet" data-sa="analog">Замена</button><button type="button" class="btn sm quiet" data-sa="edit">Изменить</button><button type="button" class="btn sm quiet danger" data-sa="del">Удалить</button></div></div></article>`;
+  }).join('');
+}
+function openStashForm(item, ref) {
+  const f = $('#stashForm'); f.hidden = false; $('#sfErr').hidden = true; $('#sfFind').value = ''; $('#sfFindList').innerHTML = '';
+  S.editStash = item ? item.id : null; S.sfRef = item ? (item.refId || null) : (ref ? ref.id : null);
+  const v = item || (ref ? { name: `${ref.brand} ${ref.name}`, comp: ref.comp, g: ref.g, m: ref.m, qty: 1, colorName: '', hex: '#d9cbb4', note: '' } : { name: '', comp: '', g: '', m: '', qty: 1, colorName: '', hex: '#d9cbb4', note: '' });
+  $('#sfName').value = v.name || ''; $('#sfComp').value = v.comp || ''; $('#sfG').value = v.g === '' ? '' : fmt(v.g); $('#sfM').value = v.m === '' ? '' : fmt(v.m);
+  $('#sfQty').value = fmt(v.qty == null ? 1 : v.qty); $('#sfColor').value = v.colorName || ''; $('#sfHex').value = isHex(v.hex) ? v.hex : '#d9cbb4'; $('#sfNote').value = v.note || '';
+  $('#sfSave').textContent = item ? 'Сохранить изменения' : 'Сохранить';
+  f.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+  (item || ref ? $('#sfColor') : $('#sfFind')).focus();
+}
+function closeStashForm() { $('#stashForm').hidden = true; S.editStash = null; S.sfRef = null; }
+async function saveStash(e) {
+  e.preventDefault();
+  const name = $('#sfName').value.trim(), comp = $('#sfComp').value.trim(), g = num($('#sfG').value), m = num($('#sfM').value), qty = num($('#sfQty').value);
+  const err = $('#sfErr');
+  if (!name || !g || !m || g <= 0 || m <= 0) { err.textContent = 'Укажите название, вес и метраж мотка — они нужны для расчёта мотков и замены.'; err.hidden = false; return; }
+  let refId = S.sfRef;
+  if (refId && REFMAP[refId] && `${REFMAP[refId].brand} ${REFMAP[refId].name}` !== name) refId = null;
+  const existing = S.editStash ? stashItem(S.editStash) : null;
+  const doc = { name, comp, g, m, colorName: $('#sfColor').value.trim(), hex: $('#sfHex').value, qty: qty == null ? 1 : Math.max(0, qty), note: $('#sfNote').value.trim(), refId: refId || null, fiber: refId ? REFMAP[refId].fiber : inferFiber(comp), createdAt: existing ? existing.createdAt : Date.now(), updatedAt: Date.now() };
+  const btn = $('#sfSave'); btn.disabled = true;
+  const ok = await store.put('stash', S.editStash || newId(), doc);
+  btn.disabled = false;
+  if (ok) { toast(existing ? 'Изменения сохранены' : 'Пряжа добавлена'); closeStashForm(); }
+}
+function initStash() {
+  $('#stashAddBtn').addEventListener('click', () => openStashForm(null, null));
+  $('#sfCancel').addEventListener('click', closeStashForm);
+  $('#stashForm').addEventListener('submit', saveStash);
+  $('#sfFind').addEventListener('input', () => {
+    const q = $('#sfFind').value.trim().toLowerCase(), list = $('#sfFindList');
+    if (!q) { list.innerHTML = ''; return; }
+    const items = REF.filter(r => `${r.brand} ${r.name} ${r.comp}`.toLowerCase().includes(q)).slice(0, 8);
+    list.innerHTML = items.length ? items.map(r => `<button type="button" class="pick" data-id="${r.id}"><span><b>${esc(r.brand + ' ' + r.name)}</b><small>${esc(r.comp)} · ${fmt(r.g)} г / ${fmt(r.m)} м</small></span></button>`).join('') : '<p class="hint pad">В справочнике такой нет — заполните поля по этикетке.</p>';
+  });
+  $('#sfFindList').addEventListener('click', e => {
+    const b = e.target.closest('.pick'); if (!b) return; const r = REFMAP[b.dataset.id]; if (!r) return;
+    S.sfRef = r.id; $('#sfName').value = `${r.brand} ${r.name}`; $('#sfComp').value = r.comp; $('#sfG').value = fmt(r.g); $('#sfM').value = fmt(r.m);
+    $('#sfFindList').innerHTML = ''; $('#sfFind').value = ''; $('#sfColor').focus();
+  });
+  $('#stashList').addEventListener('click', async e => {
+    if (e.target.closest('[data-act="stash-add"]')) { openStashForm(null, null); return; }
+    const card = e.target.closest('.ycard'); if (!card) return;
+    const s = stashItem(card.dataset.id); if (!s) return;
+    const q = e.target.closest('[data-q]');
+    if (q) {
+      s.qty = Math.max(0, Math.round(((s.qty || 0) + Number(q.dataset.q)) * 10) / 10);
+      renderStash(); queuePatch('stash', s.id, { qty: s.qty, updatedAt: Date.now() });
+      return;
+    }
+    const a = e.target.closest('[data-sa]'); if (!a) return;
+    if (a.dataset.sa === 'edit') openStashForm(s, null);
+    else if (a.dataset.sa === 'analog') { showTab('ref'); openAnalog({ kind: 'stash', id: s.id, refId: s.refId, name: `${s.name}${s.colorName ? ', ' + s.colorName : ''}`, g: s.g, m: s.m, fiber: s.fiber || inferFiber(s.comp) }); }
+    else if (a.dataset.sa === 'use') { addSel('stash', s.id); showTab('new'); $('#desc').focus(); toast('Пряжа добавлена в новую схему'); }
+    else if (a.dataset.sa === 'del') {
+      if (a.dataset.confirm !== '1') { a.dataset.confirm = '1'; a.textContent = 'Точно удалить?'; setTimeout(() => { if (a.isConnected) { a.dataset.confirm = ''; a.textContent = 'Удалить'; } }, 5000); return; }
+      const ok = await store.remove('stash', s.id); if (ok) toast('Пряжа удалена');
+    }
+  });
+}
+
+/* ---------- Справочник и замена ---------- */
+function initRef() {
+  const fibers = Object.keys(FIBERS).filter(f => f !== 'другое');
+  $('#fiberSel').innerHTML = '<option value="">Любой состав</option>' + fibers.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
+  $('#cF').innerHTML = fibers.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
+  chips($('#thickChips'), [{ id: '', label: 'Любая толщина' }, ...THICK.map(t => ({ id: t, label: t }))], '', v => { S.refFilter.thick = v; renderRef(); });
+  $('#refQ').addEventListener('input', () => { S.refFilter.q = $('#refQ').value.trim().toLowerCase(); renderRef(); });
+  $('#fiberSel').addEventListener('change', () => { S.refFilter.fiber = $('#fiberSel').value; renderRef(); });
+  $('#refList').addEventListener('click', e => {
+    const b = e.target.closest('[data-ra]'); if (!b) return; const r = REFMAP[b.dataset.id]; if (!r) return;
+    if (b.dataset.ra === 'analog') openAnalog({ kind: 'ref', id: r.id, refId: r.id, name: `${r.brand} ${r.name}`, g: r.g, m: r.m, fiber: r.fiber });
+    else { showTab('stash'); openStashForm(null, r); }
+  });
+  $('#customForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const g = num($('#cG').value), m = num($('#cM').value);
+    if (!g || !m) { toast('Укажите вес и метраж мотка.'); return; }
+    openAnalog({ kind: 'custom', id: null, name: `Ваша пряжа: ${fmt(g)} г / ${fmt(m)} м`, g, m, fiber: $('#cF').value });
+  });
+  $('#analogPanel').addEventListener('click', e => { if (e.target.closest('[data-aclose]')) { S.analog = null; $('#analogPanel').hidden = true; } });
+  $('#analogPanel').addEventListener('input', e => { if (e.target.id === 'needSk') { S.needSk = num(e.target.value) || 0; renderAnalogList(); } });
+  renderRef();
+}
+function renderRef() {
+  const f = S.refFilter;
+  const list = REF.filter(r => (!f.q || `${r.brand} ${r.name} ${r.comp} ${r.fiber}`.toLowerCase().includes(f.q)) && (!f.thick || thick(r) === f.thick) && (!f.fiber || r.fiber === f.fiber));
+  $('#refCount').textContent = `${list.length} ${plural(list.length, ['вид', 'вида', 'видов'])} пряжи`;
+  $('#refList').innerHTML = list.length ? list.map(r => `<div class="yrow"><div class="yn"><b>${esc(r.brand)} ${esc(r.name)}</b><small>${esc(r.comp)}</small></div>
+    <div class="ys"><b>${fmt(r.g)} г / ${fmt(r.m)} м</b> · ${fmt(m100(r), 0)} м в 100 г<br>${thick(r)} · крючок ${hookFor(r)}</div>
+    <div class="ya"><button type="button" class="btn sm" data-ra="stash" data-id="${r.id}">В запасы</button><button type="button" class="btn sm quiet" data-ra="analog" data-id="${r.id}">Замена</button></div></div>`).join('')
+    : '<p class="muted pad">Ничего не нашлось. Попробуйте другое слово или уберите фильтры.</p>';
+}
+function analogs(base) {
+  const bm = m100(base);
+  const cands = [
+    ...REF.map(r => ({ kind: 'ref', id: r.id, name: `${r.brand} ${r.name}`, comp: r.comp, g: r.g, m: r.m, fiber: r.fiber })),
+    ...store.data.stash.filter(s => s.g && s.m).map(s => ({ kind: 'stash', id: s.id, name: s.name, color: s.colorName, comp: s.comp, g: s.g, m: s.m, fiber: s.fiber || inferFiber(s.comp), qty: s.qty })),
+  ].filter(c => !(c.kind === base.kind && c.id === base.id) && !(c.kind === 'ref' && base.refId && c.id === base.refId) && (c.fiber !== 'петельки' || base.fiber === 'петельки'));
+  return cands.map(c => { const cm = m100(c); return { ...c, m100: cm, diff: cm / bm - 1, score: Math.abs(Math.log(cm / bm)) + fiberPenalty(base.fiber, c.fiber) }; })
+    .filter(c => c.score < 0.6).sort((a, b) => a.score - b.score).slice(0, 8);
+}
+function openAnalog(base) {
+  S.analog = base;
+  const el = $('#analogPanel'); el.hidden = false;
+  el.innerHTML = `<div class="ahead"><div><span class="eyebrow">Замена пряжи</span><h3>${esc(base.name)}</h3><p class="muted">${fmt(m100(base), 0)} м в 100 г · ${thick(base)} · ${esc(base.fiber)}</p></div><button type="button" class="x" data-aclose aria-label="Закрыть замену">×</button></div>
+    <div class="calc"><label for="needSk">По схеме нужно</label><input id="needSk" type="text" inputmode="decimal" value="${fmt(S.needSk)}"><span id="needTxt"></span></div>
+    <div class="alist" id="alist"></div>
+    <p class="hint">Хорошая замена — разница в метраже до 10–15 % и похожий состав. Всё равно свяжите образец: плотность у разных марок отличается.</p>`;
+  renderAnalogList();
+  el.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+}
+function renderAnalogList() {
+  const base = S.analog; if (!base) return;
+  const need = S.needSk || 0, needM = need * base.m;
+  $('#needTxt').innerHTML = `${plural(need, SK)} этой пряжи — это ≈ <b>${fmt(needM, 0)} м</b>`;
+  const list = analogs(base);
+  $('#alist').innerHTML = list.length ? list.map(c => {
+    const sk = need ? Math.ceil(needM / c.m) : 0, d = c.diff * 100, cls = Math.abs(d) <= 10 ? 'ok' : Math.abs(d) <= 20 ? 'warn' : 'bad';
+    return `<div class="arow"><div class="an"><b>${esc(c.name)}${c.color ? ', ' + esc(c.color) : ''}</b>${c.kind === 'stash' ? `<span class="badge ok">в запасах: ${fmt(c.qty)} ${plural(c.qty, SK)}</span>` : ''}<small>${esc(c.comp || c.fiber)} · ${fmt(c.g)} г / ${fmt(c.m)} м</small></div>
+      <div class="am"><span class="badge ${cls}">${d > 0 ? '+' : ''}${fmt(d, 0)} %</span><small>${fmt(c.m100, 0)} м в 100 г</small></div>
+      <div class="ak">${need ? `<b>${sk}</b> ${plural(sk, SK)}<small>≈ ${fmt(needM / c.m * c.g, 0)} г</small>` : ''}</div></div>`;
+  }).join('') : '<p class="muted pad">Близких по толщине и составу нет в справочнике и в ваших запасах.</p>';
+}
+
+/* ---------- Вкладки и запуск ---------- */
+function showTab(t) {
+  S.tab = t;
+  $$('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  ['new', 'saved', 'stash', 'ref'].forEach(v => { $('#v-' + v).hidden = v !== t; });
+  lsSet('tab', t);
+}
+function init() {
+  $('#logo').outerHTML = ringIcon(44, '');
+  initForm(); initStash(); initRef();
+  renderCurrent(); renderSavedList(); renderStash();
+  $$('.tab').forEach(b => b.addEventListener('click', () => { showTab(b.dataset.tab); if (b.dataset.tab === 'saved' && S.savedCtx) closeSaved(); }));
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) showTab(g.dataset.go); });
+  $('#savedList').addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openSaved(b.dataset.open); });
+  $('#savedOne').addEventListener('click', e => { if (e.target.closest('[data-back]')) closeSaved(); });
+  bindPatternEvents($('#resultPane'), () => S.current);
+  bindPatternEvents($('#savedOne'), () => S.savedCtx);
+  store.on('stash', () => { renderStash(); if (!$('#picker').hidden) renderPick(); if (S.analog) renderAnalogList(); });
+  store.on('patterns', () => { renderSavedList(); if (S.savedCtx && !store.data.patterns.some(x => x.id === S.savedCtx.savedId) && store.mode !== 'starting') closeSaved(); });
+  const hash = (location.hash || '').slice(1);
+  showTab(['new', 'saved', 'stash', 'ref'].includes(hash) ? hash : (lsGet('tab', 'new') || 'new'));
+  setGenAvailability();
+
+  store.init().then(() => { renderSavedList(); renderStash(); });
+  (async () => {
+    let sample = null, dl = null;
+    if (C && typeof C.use === 'function') {
+      try { [sample, dl] = await Promise.all([C.use('sample'), C.use('downloads')]); } catch (e) { sample = null; }
+    }
+    S.sample = sample || null; S.downloads = dl || null;
+    if (S.downloads) document.body.classList.remove('no-dl');
+    if (S.sample) { const lim = await S.sample.limits().catch(() => null); S.imgLimits = lim && lim.images ? lim.images : null; }
+    setGenAvailability();
+  })();
+}
+document.body.classList.add('no-dl');
+init();
+</script>
+</body>
+</html>
